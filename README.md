@@ -16,13 +16,13 @@
 ▓▓░░░░░░░░░░░░░░░░ 10%
 
 ### 📌 Current Development
-- [x] Project Planning
-- [x] System Concept
-- [ ] UI/UX Design
-- [ ] Backend Development
-- [ ] Payment Integration
-- [ ] Testing
-- [ ] Deployment
+- ✅ Project Planning
+- ✅ System Concept
+- ⬜ UI/UX Design
+- ⬜ Backend Development
+- ⬜ Payment Integration
+- ⬜ Testing
+- ⬜ Deployment
 
 ---
 
