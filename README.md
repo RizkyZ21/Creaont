@@ -1,59 +1,96 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 🎨 Creaont – Platform Penyedia Jasa Desain
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+**Creaont** adalah platform berbasis web yang dirancang untuk menghubungkan **klien dengan desainer grafis profesional** dalam satu sistem yang terstruktur, transparan, dan mudah digunakan.
 
-## About Laravel
+Platform ini hadir untuk mempermudah proses **pencarian, pemesanan, serta pengelolaan layanan desain grafis** secara digital tanpa harus melalui komunikasi informal yang sering menimbulkan miskomunikasi.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## 📌 Latar Belakang
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+Perkembangan teknologi digital meningkatkan kebutuhan akan **desain grafis** di berbagai bidang seperti bisnis, pendidikan, hingga media sosial. Namun, proses pencarian jasa desain saat ini masih banyak dilakukan secara manual melalui media sosial atau rekomendasi pribadi.
 
-## Learning Laravel
+Hal ini menimbulkan beberapa kendala seperti:
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+- Sulit menemukan **desainer yang terpercaya**
+- Proses pemesanan yang **tidak terdokumentasi dengan baik**
+- Risiko **miskomunikasi antara klien dan desainer**
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+Creaont hadir sebagai solusi untuk menyediakan **platform penyedia jasa desain yang profesional dan sistematis**.
 
-## Laravel Sponsors
+---
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+## 🎯 Tujuan Pengembangan
 
-### Premium Partners
+Pengembangan Creaont bertujuan untuk:
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+- Mempermudah klien dalam **memesan jasa desain secara terstruktur**
+- Menyediakan **informasi harga layanan yang transparan**
+- Memberikan sistem **pelacakan progres pekerjaan secara real-time**
+- Menjadi media yang mempertemukan **desainer dan klien dalam satu ekosistem digital**
 
-## Contributing
+---
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## 🚀 Fitur Utama
 
-## Code of Conduct
+### 🔍 Pencarian Desainer
+Pengguna dapat mencari jasa desain berdasarkan **kategori, harga, dan rating desainer**.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### 💳 Sistem Pembayaran Aman
+Mendukung berbagai metode pembayaran seperti:
 
-## Security Vulnerabilities
+- Transfer Bank
+- E-Wallet
+- Kartu Kredit
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### ⭐ Sistem Rating & Review
+Klien dapat memberikan **ulasan dan penilaian** untuk membantu pengguna lain memilih desainer terbaik.
 
-## License
+### 📊 Dashboard Interaktif
+Desainer dapat mengelola:
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+- Order proyek
+- Progres pekerjaan
+- Portofolio desain
+
+---
+
+## 👥 Manfaat Platform
+
+### 🎨 Untuk Designer
+- Platform untuk menjual jasa desain secara profesional  
+- Profil dan portofolio dapat dilihat oleh banyak klien  
+- Sistem manajemen order yang terpusat  
+
+### 👤 Untuk Klien
+- Mudah menemukan desainer sesuai kebutuhan  
+- Proses pemesanan yang lebih aman dan transparan  
+- Seluruh proses proyek terdokumentasi dengan baik  
+
+---
+
+## 🏗 Arsitektur Sistem
+
+Platform Creaont dirancang dengan arsitektur modern yang terdiri dari:
+
+- Frontend Web / Mobile Apps
+- API Gateway
+- Backend Server
+- Database
+- Payment Gateway
+
+---
+
+## 👨‍💻 Tim Pengembang
+
+Kelompok 4
+
+- **Damar Wisnu Angjaya**  
+- **Muhammad Rizky Zuhriansyah**  
+- **Muhammad Labib Irfani**
+
+---
+
+## 📌 Kesimpulan
+
+Creaont merupakan solusi digital untuk mempermudah interaksi antara **desainer dan klien** melalui sistem yang lebih **profesional, transparan, dan efisien**, sehingga proses pemesanan jasa desain dapat dilakukan dengan lebih terstruktur dan terpercaya.
