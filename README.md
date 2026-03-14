@@ -1,7 +1,32 @@
-# STILL ON PROGRESS
-![Progress](https://img.shields.io/badge/Progress-10%25-red)
-
 # 🎨 Creaont – Platform Penyedia Jasa Desain
+
+<div align="center">
+
+![Development Status](https://img.shields.io/badge/Development-Active-orange)
+![Progress](https://img.shields.io/badge/Progress-10%25-red)
+![Project](https://img.shields.io/badge/Project-Creaont-blue)
+
+</div>
+
+> 🚧 **This project is currently under development.**
+
+---
+
+## 📊 Development Progress
+▓▓░░░░░░░░░░░░░░░░ 10%
+
+### 📌 Current Development
+- [x] Project Planning
+- [x] System Concept
+- [ ] UI/UX Design
+- [ ] Backend Development
+- [ ] Payment Integration
+- [ ] Testing
+- [ ] Deployment
+
+---
+
+## 📖 About The Project
 
 **Creaont** adalah platform berbasis web yang dirancang untuk menghubungkan **klien dengan desainer grafis profesional** dalam satu sistem yang terstruktur, transparan, dan mudah digunakan.
 
@@ -42,9 +67,9 @@ Pengguna dapat mencari jasa desain berdasarkan **kategori, harga, dan rating des
 ### 💳 Sistem Pembayaran Aman
 Mendukung berbagai metode pembayaran seperti:
 
-- Transfer Bank
-- E-Wallet
-- Kartu Kredit
+- Transfer Bank  
+- E-Wallet  
+- Kartu Kredit  
 
 ### ⭐ Sistem Rating & Review
 Klien dapat memberikan **ulasan dan penilaian** untuk membantu pengguna lain memilih desainer terbaik.
@@ -52,9 +77,21 @@ Klien dapat memberikan **ulasan dan penilaian** untuk membantu pengguna lain mem
 ### 📊 Dashboard Interaktif
 Desainer dapat mengelola:
 
-- Order proyek
-- Progres pekerjaan
-- Portofolio desain
+- Order proyek  
+- Progres pekerjaan  
+- Portofolio desain  
+
+---
+
+## 🏗 Arsitektur Sistem
+
+Platform Creaont dirancang dengan arsitektur modern yang terdiri dari:
+
+- Frontend Web / Mobile Apps
+- API Gateway
+- Backend Server
+- Database
+- Payment Gateway
 
 ---
 
@@ -72,24 +109,12 @@ Desainer dapat mengelola:
 
 ---
 
-## 🏗 Arsitektur Sistem
-
-Platform Creaont dirancang dengan arsitektur modern yang terdiri dari:
-
-- Frontend Web / Mobile Apps
-- API Gateway
-- Backend Server
-- Database
-- Payment Gateway
-
----
-
 ## 👨‍💻 Tim Pengembang
 
 Kelompok 4
 
-- **Damar Wisnu Angjaya**  
-- **Muhammad Rizky Zuhriansyah**  
+- **Damar Wisnu Angjaya**
+- **Muhammad Rizky Zuhriansyah**
 - **Muhammad Labib Irfani**
 
 ---
@@ -97,3 +122,11 @@ Kelompok 4
 ## 📌 Kesimpulan
 
 Creaont merupakan solusi digital untuk mempermudah interaksi antara **desainer dan klien** melalui sistem yang lebih **profesional, transparan, dan efisien**, sehingga proses pemesanan jasa desain dapat dilakukan dengan lebih terstruktur dan terpercaya.
+
+---
+
+<div align="center">
+
+✨ Built for academic project & learning purposes
+
+</div>
