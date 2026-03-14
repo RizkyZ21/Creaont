@@ -1,4 +1,5 @@
 # STILL ON PROGRESS
+![Progress](https://img.shields.io/badge/Progress-10%25-red)
 
 # 🎨 Creaont – Platform Penyedia Jasa Desain
 
