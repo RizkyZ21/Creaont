@@ -46,28 +46,117 @@ routes/
  ├── web.php
  ├── api.php
 
+----------------------------------------------------------------------------------------------------
 
-/////----------DEPENDENSI---------///////
-----------breeze (Authentication)----------
+=== CREAONT PROJECT SETUP ===
 
-composer require laravel/breeze --dev
-php artisan breeze:install blade
-npm install && npm run build
+1. REQUIREMENTS
+----------------------------
+- PHP >= 8.2
+- Composer
+- Node.js & NPM
+- MySQL (Laragon / XAMPP / dll)
+- Git (optional)
+
+---
+
+2. INSTALL PROJECT
+----------------------------
+Clone / copy project ke folder:
+
+cd creaont
+
+Install dependency:
+composer install
+
+---
+
+3. SET ENV FILE
+----------------------------
+Copy file .env:
+
+cp .env.example .env
+
+Lalu edit bagian database:
+
+DB_DATABASE=creaont
+DB_USERNAME=root
+DB_PASSWORD=
+
+---
+
+4. GENERATE KEY
+----------------------------
+php artisan key:generate
+
+---
+
+5. SETUP DATABASE
+----------------------------
+Buat database di MySQL:
+
+creaont
+
+Lalu jalankan:
+
 php artisan migrate
 
--------------API Auth (Flutter)--------------
+(Optional: seed data)
+php artisan db:seed
 
-composer require laravel/sanctum
-php artisan vendor:publish --provider="Laravel\Sanctum\SanctumServiceProvider"
-php artisan migrate
+---
 
-----------Upload gambar (portfolio)-----------
+6. INSTALL FRONTEND
+----------------------------
+npm install
+npm run dev
 
-composer require intervention/image
+---
 
---------Role (Admin, Designer, Customer)------
+7. STORAGE LINK (UNTUK GAMBAR)
+----------------------------
+php artisan storage:link
 
-composer require spatie/laravel-permission
+---
+
+8. RUN SERVER
+----------------------------
+php artisan serve
+
+Buka di browser:
+http://127.0.0.1:8000
+
+---
+
+9. LOGIN TEST (JIKA ADA SEED)
+----------------------------
+Email: admin@gmail.com
+Password: 12345678
+
+---
+
+10. TROUBLESHOOT
+----------------------------
+
+Kalau error:
+
+- Clear cache:
+php artisan config:clear
+php artisan cache:clear
+php artisan view:clear
+
+- Kalau CSS gak muncul:
+npm run dev
+
+- Kalau error APP_KEY:
+php artisan key:generate
+
+- Kalau error database:
+cek .env
+
+---
+
+=== END ===
 
 
 

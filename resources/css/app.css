@@ -1,3 +1,215 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+/* RESET */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* ROOT COLOR */
+:root {
+    --primary: #a3e635;
+    --dark: #020617;
+    --dark-soft: #0f172a;
+    --text: #ffffff;
+    --text-dim: #94a3b8;
+}
+
+/* BODY */
+body {
+    font-family: 'Segoe UI', sans-serif;
+    color: var(--text);
+
+    background: linear-gradient(
+        135deg,
+        #000c27,
+        #00021f,
+        #000c27
+    );
+
+    min-height: 100vh;
+}
+
+/* FIX NAVBAR SPACE */
+main {
+    padding-top: 80px;
+}
+
+/* ================= NAVBAR ================= */
+.navbar {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    padding: 15px 40px;
+
+    background: rgba(2, 6, 23, 0.6); /* transparan */
+    backdrop-filter: blur(12px);     /* efek blur */
+    -webkit-backdrop-filter: blur(12px);
+
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 1000;
+}
+
+.nav-brand {
+    font-weight: bold;
+    font-size: 20px;
+}
+
+.nav-brand span {
+    color: var(--primary);
+}
+
+.nav-links a {
+    margin-left: 20px;
+    text-decoration: none;
+    color: var(--text-dim);
+    font-size: 14px;
+}
+
+.nav-links a.active,
+.nav-links a:hover {
+    color: var(--text);
+}
+
+.nav-cta {
+    background: var(--primary);
+    color: black !important;
+    padding: 6px 14px;
+    border-radius: 20px;
+}
+
+/* ================= HERO ================= */
+.hero {
+    text-align: center;
+    padding: 140px 20px 80px;
+}
+
+.hero-content h1 {
+    font-size: 56px;
+    font-weight: 800;
+}
+
+.hero-content h1 span {
+    color: var(--primary);
+}
+
+.hero-badge {
+    color: var(--text-dim);
+    font-size: 14px;
+}
+
+/* KATEGORI SECTION */
+.kategori {
+    padding: 80px 20px;
+    text-align: center;
+}
+
+.kategori h2 {
+    font-size: 42px;
+    margin-top: 10px;
+}
+
+.kategori h2 span {
+    color: var(--primary);
+}
+
+.hero-center {
+    max-width: 700px;
+    margin: auto;
+}
+
+.category-grid {
+    margin-top: 50px;
+}
+
+/* BADGE */
+.badge {
+    display: inline-block;
+    background: var(--primary);
+    color: black;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    margin-bottom: 15px;
+}
+
+/* ================= CATEGORY ================= */
+.category-grid {
+    margin-top: 50px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 20px;
+    padding: 0 20px;
+}
+
+.card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    padding: 25px;
+    border-radius: 12px;
+    color: white;
+    text-align: center;
+    transition: 0.3s;
+}
+
+.card p {
+    margin-top: 10px;
+    font-size: 14px;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    border-color: var(--primary);
+}
+
+/* ================= STEPS ================= */
+.steps {
+    padding: 100px 20px;
+    text-align: center;
+}
+
+.steps h2 {
+    font-size: 36px;
+    margin-top: 10px;
+}
+
+.steps p {
+    color: var(--text-dim);
+}
+
+.steps-grid {
+    margin-top: 50px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 30px;
+}
+
+.step {
+    text-align: center;
+}
+
+.circle {
+    width: 60px;
+    height: 60px;
+    border: 1px solid var(--primary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 15px;
+    font-weight: bold;
+}
+
+input, select {
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    border: none;
+    margin-top: 5px;
+}
