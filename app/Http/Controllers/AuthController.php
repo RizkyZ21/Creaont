@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
@@ -8,20 +9,18 @@ use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
-    // LOGIN FORM
+    // ================= WEB =================
+
     public function loginForm()
     {
         return view('auth.login');
     }
 
-    // PROSES LOGIN
     public function login(Request $request)
     {
         $data = $request->only('email', 'password');
 
         if (Auth::attempt($data)) {
-
-            // 🔥 CEK ROLE
             if (Auth::user()->role == 'designer') {
                 return redirect('/designer/dashboard');
             } else {
@@ -32,28 +31,79 @@ class AuthController extends Controller
         return back()->with('error', 'Email atau password salah');
     }
 
-    // REGISTER FORM
     public function registerForm()
     {
         return view('auth.register');
     }
 
-    // PROSES REGISTER
     public function register(Request $request)
-{
-    $data = $request->all();
+    {
+        $data = $request->all();
+        $data['password'] = bcrypt($data['password']);
 
-    $data['password'] = bcrypt($data['password']);
+        User::create($data);
 
-    User::create($data);
+        return "REGISTER BERHASIL";
+    }
 
-    return "REGISTER BERHASIL";
-}
-
-    // LOGOUT
     public function logout()
     {
         Auth::logout();
         return redirect('/');
+    }
+
+    // ================= API =================
+
+    public function loginApi(Request $request)
+    {
+        // 🔥 VALIDASI
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'required'
+        ]);
+
+        $user = User::where('email', $request->email)->first();
+
+        if (!$user || !Hash::check($request->password, $user->password)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Email atau password salah'
+            ], 401);
+        }
+
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Login berhasil',
+            'token' => $token,
+            'user' => $user
+        ]);
+    }
+
+    public function registerApi(Request $request)
+    {
+        // 🔥 VALIDASI
+        $request->validate([
+            'name' => 'required',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|min:6'
+        ]);
+
+        $user = User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => bcrypt($request->password),
+            'role' => $request->role
+        ]);
+
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Register berhasil',
+            'token' => $token,
+            'user' => $user
+        ]);
     }
 }

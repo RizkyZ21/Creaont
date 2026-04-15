@@ -667,3 +667,88 @@ body::before {
     min-height: 100vh;
     padding: 1.5rem;
 }
+
+/* BACKGROUND */
+.bg-dark {
+    background: #020617;
+    color: white;
+}
+
+/* LAYOUT */
+.layout {
+    display: flex;
+}
+
+/* SIDEBAR */
+.sidebar {
+    width: 220px;
+    height: 100vh;
+    background: #0f172a;
+    padding: 20px;
+}
+
+.sidebar h2 {
+    margin-bottom: 20px;
+}
+
+.sidebar a {
+    display: block;
+    margin-bottom: 10px;
+    color: #94a3b8;
+    text-decoration: none;
+}
+
+.sidebar a:hover {
+    color: white;
+}
+
+/* MAIN */
+.main {
+    flex: 1;
+    padding: 30px;
+}
+
+/* TOPBAR */
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+/* GRID */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 20px;
+}
+
+/* CARD */
+.card {
+    background: #0f172a;
+    padding: 20px;
+    border-radius: 12px;
+    transition: 0.3s;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    border: 1px solid #a3e635;
+}
+
+/* BUTTON */
+.btn {
+    background: #a3e635;
+    color: black;
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-add {
+    margin-top: -10px;
+}
+
+.btn:hover {
+    box-shadow: 0 0 10px #a3e635;
+}
