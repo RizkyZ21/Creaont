@@ -11,10 +11,15 @@
 
     <!-- SIDEBAR -->
     <div class="sidebar">
-        <h2>Creaont</h2>
-        <a href="#">🏠 Dashboard</a>
-        <a href="/portfolio">📁 Portfolio</a>
-        <a href="#">👤 Profile</a>
+        <h2>Designer</h2>
+
+        <a href="/designer/dashboard">Dashboard</a>
+        <a href="/portfolio/create">+ Tambah Portfolio</a>
+
+        <form action="/logout" method="POST">
+            @csrf
+            <button class="btn" style="margin-top:20px;">Logout</button>
+        </form>
     </div>
 
     <!-- MAIN -->
@@ -22,46 +27,39 @@
 
         <!-- TOPBAR -->
         <div class="topbar">
-
-            <!-- KIRI -->
-            <h3>Hello Designer, {{ auth()->user()->name }}</h3>
-
-            <!-- KANAN -->
-            <div style="display:flex; gap:10px; align-items:center;">
-
-                <!-- TOMBOL TAMBAH -->
-                <a href="/designer/portfolio/create" class="btn">
-                    + Tambah Portfolio
-                </a>
-
-                <!-- LOGOUT -->
-                <form action="/logout" method="POST">
-                    @csrf
-                    <button class="btn">Logout</button>
-                </form>
-
-            </div>
+            <h1>Dashboard</h1>
+            <p>Halo, {{ auth()->user()->name }}</p>
         </div>
 
-        <!-- CONTENT -->
+        <hr><br>
+
         <h2>Portfolio Saya</h2>
 
         <br>
 
-        @if(auth()->user()->portfolios->isEmpty())
-            <p>Belum ada portfolio</p>
-        @else
-            <div class="grid">
-                @foreach(auth()->user()->portfolios as $p)
-                    <div class="card">
-                        <h3>{{ $p->title }}</h3>
-                        <p>Rp {{ $p->price }}</p>
-                    </div>
-                @endforeach
-            </div>
-        @endif
+        <!-- GRID PORTFOLIO -->
+        <div class="grid">
+
+            @forelse(auth()->user()->portfolios as $p)
+                <div class="card">
+                    <h3>{{ $p->title }}</h3>
+                    <p>Rp {{ $p->price }}</p>
+
+                    <br>
+
+                    <!-- TOMBOL -->
+                    <a href="/portfolio/{{ $p->id }}/edit" class="btn">
+                        Edit
+                    </a>
+                </div>
+            @empty
+                <p>Belum ada portfolio 😢</p>
+            @endforelse
+
+        </div>
 
     </div>
+
 </div>
 
 </body>

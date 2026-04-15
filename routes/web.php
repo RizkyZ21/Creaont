@@ -15,7 +15,6 @@ use App\Models\Portfolio;
 | AUTH
 |--------------------------------------------------------------------------
 */
-
 // LOGIN
 Route::get('/login', [AuthController::class, 'loginForm']);
 Route::post('/login', [AuthController::class, 'login']);
@@ -27,7 +26,6 @@ Route::post('/register', [AuthController::class, 'register']);
 // LOGOUT
 Route::post('/logout', [AuthController::class, 'logout']);
 
-
 /*
 |--------------------------------------------------------------------------
 | LANDING
@@ -37,7 +35,6 @@ Route::get('/', function () {
     $portfolios = Portfolio::latest()->take(8)->get();
     return view('landing', compact('portfolios'));
 });
-
 
 /*
 |--------------------------------------------------------------------------
@@ -64,7 +61,18 @@ Route::middleware('auth')->group(function () {
     // ADMIN
     Route::resource('/admin/users', UserController::class);
 
+    // =========================
     // DESIGNER PORTFOLIO
-    Route::get('/designer/portfolio/create', [PortfolioController::class, 'create']);
-    Route::post('/designer/portfolio/store', [PortfolioController::class, 'store']);
+    // =========================
+    Route::prefix('designer/portfolio')->group(function () {
+
+        Route::get('/create', [PortfolioController::class, 'create']);
+        Route::post('/store', [PortfolioController::class, 'store']);
+
+        Route::get('/{id}/edit', [PortfolioController::class, 'edit']);
+        Route::post('/{id}/update', [PortfolioController::class, 'update']);
+
+        Route::delete('/{id}/delete', [PortfolioController::class, 'destroy']);
+    });
+
 });
