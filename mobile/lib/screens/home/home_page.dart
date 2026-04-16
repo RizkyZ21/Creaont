@@ -12,13 +12,27 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int currentIndex = 0;
 
-  final pages = const [HomeTab(), ProfileTab()];
-
   @override
   Widget build(BuildContext context) {
+    Widget currentPage;
+
+    // 🔥 SAFE SWITCH (ANTI CRASH)
+    switch (currentIndex) {
+      case 0:
+        currentPage = const HomeTab();
+        break;
+      case 1:
+        currentPage = const ProfileTab();
+        break;
+      default:
+        currentPage = const Center(
+          child: Text("ERROR PAGE", style: TextStyle(color: Colors.white)),
+        );
+    }
+
     return Scaffold(
-      backgroundColor: Colors.black, // 🔥 biar gak putih
-      body: SafeArea(child: pages[currentIndex]),
+      backgroundColor: Colors.black,
+      body: SafeArea(child: currentPage),
 
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: currentIndex,
