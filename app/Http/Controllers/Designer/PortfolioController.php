@@ -9,12 +9,6 @@ use Illuminate\Support\Facades\Auth;
 
 class PortfolioController extends Controller
 {
-    public function index()
-    {
-        $portfolios = Auth::user()->portfolios;
-        return view('designer.portfolio.index', compact('portfolios'));
-    }
-
     public function create()
     {
         return view('designer.portfolio.create');
@@ -37,16 +31,25 @@ class PortfolioController extends Controller
 
         Portfolio::create($data);
 
-        return redirect('/portfolio')->with('success', 'Portfolio berhasil ditambahkan');
+        return redirect()->route('designer.dashboard')
+            ->with('success', 'Portfolio berhasil ditambahkan');
     }
 
-    public function edit(Portfolio $portfolio)
+    public function edit($id)
     {
+        $portfolio = Portfolio::findOrFail($id);
+
+        if ($portfolio->user_id != auth()->id()) {
+            abort(403);
+        }
+
         return view('designer.portfolio.edit', compact('portfolio'));
     }
 
-    public function update(Request $request, Portfolio $portfolio)
+    public function update(Request $request, $id)
     {
+        $portfolio = Portfolio::findOrFail($id);
+
         $data = $request->validate([
             'title' => 'required',
             'description' => 'nullable',
@@ -55,12 +58,15 @@ class PortfolioController extends Controller
 
         $portfolio->update($data);
 
-        return redirect('/portfolio')->with('success', 'Updated');
+        return redirect()->route('designer.dashboard')
+            ->with('success', 'Updated');
     }
 
-    public function destroy(Portfolio $portfolio)
+    public function destroy($id)
     {
+        $portfolio = Portfolio::findOrFail($id);
         $portfolio->delete();
-        return back();
+
+        return redirect()->route('designer.dashboard');
     }
 }

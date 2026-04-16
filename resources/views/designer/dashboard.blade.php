@@ -14,7 +14,7 @@
         <h2>Designer</h2>
 
         <a href="/designer/dashboard">Dashboard</a>
-        <a href="/portfolio/create">+ Tambah Portfolio</a>
+        <a href="/designer/portfolio/create">+ Tambah Portfolio</a>
 
         <form action="/logout" method="POST">
             @csrf
@@ -45,10 +45,14 @@
                     <h3>{{ $p->title }}</h3>
                     <p>Rp {{ $p->price }}</p>
 
+                    @if($p->image)
+                        <img src="{{ asset('storage/'.$p->image) }}" width="100%">
+                    @endif
+
                     <br>
 
-                    <!-- TOMBOL -->
-                    <a href="/portfolio/{{ $p->id }}/edit" class="btn">
+                    <!-- ✅ FIX LINK -->
+                    <a href="/designer/portfolio/{{ $p->id }}/edit" class="btn">
                         Edit
                     </a>
                 </div>
