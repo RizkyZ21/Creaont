@@ -8,13 +8,6 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Designer\PortfolioController;
 use App\Models\Portfolio;
-
-/*
-|--------------------------------------------------------------------------
-| AUTH
-|--------------------------------------------------------------------------
-*/
-
 // LOGIN
 Route::get('/login', [AuthController::class, 'loginForm']);
 Route::post('/login', [AuthController::class, 'login']);
@@ -26,23 +19,11 @@ Route::post('/register', [AuthController::class, 'register']);
 // LOGOUT
 Route::post('/logout', [AuthController::class, 'logout']);
 
-
-/*
-|--------------------------------------------------------------------------
-| LANDING
-|--------------------------------------------------------------------------
-*/
 Route::get('/', function () {
     $portfolios = Portfolio::latest()->take(8)->get();
     return view('landing', compact('portfolios'));
 });
 
-
-/*
-|--------------------------------------------------------------------------
-| PROTECTED ROUTES (LOGIN WAJIB)
-|--------------------------------------------------------------------------
-*/
 Route::middleware('auth')->group(function () {
 
     // DASHBOARD
@@ -62,6 +43,18 @@ Route::middleware('auth')->group(function () {
 
     // ADMIN
     Route::resource('/admin/users', UserController::class);
+
+    // DESIGNER PORTFOLIO
+    Route::prefix('designer/portfolio')->group(function () {
+
+        Route::get('/create', [PortfolioController::class, 'create'])->name('portfolio.create');
+        Route::post('/store', [PortfolioController::class, 'store'])->name('portfolio.store');
+
+        Route::get('/{id}/edit', [PortfolioController::class, 'edit'])->name('portfolio.edit');
+        Route::post('/{id}/update', [PortfolioController::class, 'update'])->name('portfolio.update');
+        Route::delete('/{id}/delete', [PortfolioController::class, 'destroy'])->name('portfolio.delete');
+
+    });
 
     // 🔥 DESIGNER PORTFOLIO (FULL CRUD)
     Route::resource('/designer/portfolio', PortfolioController::class);
