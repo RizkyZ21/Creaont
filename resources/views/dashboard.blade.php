@@ -33,14 +33,38 @@
         <!-- CONTENT -->
         <h2>Explore Design</h2>
 
-        <div class="grid">
+        <br>
+
+        <!-- GRID -->
+        <div style="
+            display:grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap:20px;
+        ">
+
             @foreach(\App\Models\Portfolio::latest()->get() as $p)
-                <div class="card">
-                    <h3>{{ $p->title }}</h3>
-                    <p>Rp {{ $p->price }}</p>
-                    <small>{{ $p->user->name ?? '-' }}</small>
-                </div>
+            <div class="card">
+
+                <!-- GAMBAR -->
+                @if($p->image)
+                    <img src="{{ asset('storage/' . $p->image) }}"
+                         style="width:100%; height:150px; object-fit:cover; border-radius:10px;">
+                @endif
+
+                <!-- TITLE -->
+                <h3 style="margin-top:10px;">{{ $p->title }}</h3>
+
+                <!-- PRICE -->
+                <p>Rp {{ number_format($p->price, 0, ',', '.') }}</p>
+
+                <!-- DESIGNER -->
+                <small style="color:#94a3b8;">
+                    by {{ $p->user->name ?? '-' }}
+                </small>
+
+            </div>
             @endforeach
+
         </div>
 
     </div>

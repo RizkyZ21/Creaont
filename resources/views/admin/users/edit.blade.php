@@ -1,6 +1,6 @@
 <h1>Edit Role</h1>
 
-<form method="POST">
+<form action="{{ url('/admin/users/' . $user->id) }}" method="POST">
     @csrf
     @method('PUT')
 

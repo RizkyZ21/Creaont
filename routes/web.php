@@ -4,7 +4,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\AuthController;
-
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Designer\PortfolioController;
@@ -57,4 +56,6 @@ Route::middleware('auth')->group(function () {
 
     });
 
+    // 🔥 DESIGNER PORTFOLIO (FULL CRUD)
+    Route::resource('/designer/portfolio', PortfolioController::class);
 });

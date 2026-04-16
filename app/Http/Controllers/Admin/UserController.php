@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
@@ -12,6 +13,23 @@ class UserController extends Controller
     {
         $users = User::all();
         return view('admin.users.index', compact('users'));
+    }
+
+    // TAMBAH USER
+    public function store(Request $request)
+    {
+        $data = $request->validate([
+            'name' => 'required',
+            'email' => 'required|email|unique:users',
+            'password' => 'required|min:6',
+            'role' => 'required|in:customer,designer,admin'
+        ]);
+
+        $data['password'] = Hash::make($data['password']);
+
+        User::create($data);
+
+        return redirect('/admin/users')->with('success', 'User berhasil ditambahkan');
     }
 
     public function edit(User $user)
@@ -22,7 +40,7 @@ class UserController extends Controller
     public function update(Request $request, User $user)
     {
         $request->validate([
-            'role' => 'required'
+            'role' => 'required|in:customer,designer,admin'
         ]);
 
         $user->update([
