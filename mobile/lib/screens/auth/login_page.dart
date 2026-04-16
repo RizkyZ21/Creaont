@@ -47,12 +47,6 @@ class _LoginPageState extends State<LoginPage> {
 
                 const SizedBox(height: 20),
 
-                // 🔥 TEXT LOGIN
-                const Text(
-                  "Login",
-                  style: TextStyle(fontSize: 20, color: Colors.white70),
-                ),
-
                 const SizedBox(height: 30),
 
                 // EMAIL
@@ -141,7 +135,10 @@ class _LoginPageState extends State<LoginPage> {
                               context,
                             );
                           },
-                          child: const Text("Login"),
+                          child: const Text(
+                            "Login",
+                            style: TextStyle(color: Colors.white),
+                          ),
                         ),
                       ),
 

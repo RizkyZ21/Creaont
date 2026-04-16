@@ -164,7 +164,10 @@ class _RegisterPageState extends State<RegisterPage> {
                                 context,
                               );
                             },
-                            child: const Text("Register"),
+                            child: const Text(
+                              "Register",
+                              style: TextStyle(color: Colors.white),
+                            ),
                           ),
                         ),
 
