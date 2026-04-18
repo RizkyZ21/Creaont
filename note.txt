@@ -1,0 +1,119 @@
+CREAONT/
+│
+├── creaont-backend/                 # Laravel Backend API + Admin
+│   ├── app/
+│   │   ├── Events/
+│   │   │   └── ChatMessageSent.php
+│   │   │
+│   │   ├── Http/
+│   │   │   ├── Controllers/
+│   │   │   │   ├── AuthController.php
+│   │   │   │   ├── PortfolioController.php
+│   │   │   │   ├── OrderController.php
+│   │   │   │   ├── ChatController.php
+│   │   │   │   ├── PaymentController.php
+│   │   │   │   ├── AdminController.php
+│   │   │   │   └── InvoiceController.php
+│   │   │   │
+│   │   │   └── Middleware/
+│   │   │
+│   │   ├── Models/
+│   │   │   ├── User.php
+│   │   │   ├── Portfolio.php
+│   │   │   ├── Order.php
+│   │   │   ├── Chat.php
+│   │   │   ├── Review.php
+│   │   │   ├── Revision.php
+│   │   │   ├── DesignFile.php
+│   │   │   └── Invoice.php
+│   │   │
+│   │   └── Services/
+│   │       ├── MidtransService.php
+│   │       ├── ChatService.php
+│   │       └── InvoiceService.php
+│   │
+│   ├── config/
+│   │   ├── broadcasting.php
+│   │   └── services.php
+│   │
+│   ├── database/
+│   │   ├── migrations/
+│   │   │   ├── users_table.php
+│   │   │   ├── portfolios_table.php
+│   │   │   ├── orders_table.php
+│   │   │   ├── chats_table.php
+│   │   │   ├── revisions_table.php
+│   │   │   ├── design_files_table.php
+│   │   │   └── invoices_table.php
+│   │   │
+│   │   └── seeders/
+│   │       └── AdminSeeder.php
+│   │
+│   ├── resources/
+│   │   └── views/
+│   │       ├── admin/
+│   │       └── invoice/
+│   │           └── invoice_pdf.blade.php
+│   │
+│   ├── routes/
+│   │   ├── api.php
+│   │   └── web.php
+│   │
+│   └── .env
+│
+│
+└── creaont_flutter/                 # Flutter Frontend
+    ├── lib/
+    │   ├── main.dart
+    │   │
+    │   ├── models/
+    │   │   ├── user_model.dart
+    │   │   ├── order_model.dart
+    │   │   ├── chat_model.dart
+    │   │   └── payment_model.dart
+    │   │
+    │   ├── services/
+    │   │   ├── api_service.dart
+    │   │   ├── chat_service.dart
+    │   │   ├── payment_service.dart
+    │   │   └── auth_service.dart
+    │   │
+    │   ├── screens/
+    │   │   ├── auth/
+    │   │   │   ├── login_screen.dart
+    │   │   │   ├── register_screen.dart
+    │   │   │   └── forgot_password_screen.dart
+    │   │   │
+    │   │   ├── dashboard/
+    │   │   │   ├── customer_dashboard.dart
+    │   │   │   ├── designer_dashboard.dart
+    │   │   │   └── admin_dashboard.dart
+    │   │   │
+    │   │   ├── order/
+    │   │   │   ├── order_screen.dart
+    │   │   │   ├── order_detail_screen.dart
+    │   │   │   └── revision_screen.dart
+    │   │   │
+    │   │   ├── chat/
+    │   │   │   ├── chat_room_screen.dart
+    │   │   │   └── chat_list_screen.dart
+    │   │   │
+    │   │   ├── payment/
+    │   │   │   ├── payment_status_screen.dart
+    │   │   │   └── invoice_screen.dart
+    │   │   │
+    │   │   └── portfolio/
+    │   │       ├── portfolio_screen.dart
+    │   │       └── upload_design_screen.dart
+    │   │
+    │   ├── widgets/
+    │   │   ├── custom_button.dart
+    │   │   ├── chat_bubble.dart
+    │   │   ├── progress_card.dart
+    │   │   └── stat_card.dart
+    │   │
+    │   └── utils/
+    │       ├── constants.dart
+    │       └── routes.dart
+    │
+    └── pubspec.yaml
