@@ -38,8 +38,6 @@
             Platform desain modern untuk kebutuhan digital Anda dengan kualitas profesional.
         </p>
 
-        <a href="/register" class="btn">Mulai Sekarang</a>
-
     </div>
 </section>
 
