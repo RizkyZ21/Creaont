@@ -13,12 +13,12 @@
 ---
 
 ## 📊 Development Progress
-▓▓░░░░░░░░░░░░░░░░ 10%
+▓▓░░░░░░░░░░░░░░░░ 15%
 
 ### 📌 Current Development
 - ✅ Project Planning
 - ✅ System Concept
-- ⬜ UI/UX Design
+- ✅ UI/UX Design
 - ⬜ Backend Development
 - ⬜ Payment Integration
 - ⬜ Testing
