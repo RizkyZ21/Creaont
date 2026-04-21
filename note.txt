@@ -62,58 +62,92 @@ CREAONT/
 │   └── .env
 │
 │
-└── creaont_flutter/                 # Flutter Frontend
-    ├── lib/
-    │   ├── main.dart
+└── creaont_flutter/
+├── pubspec.yaml
+└── lib/
+    ├── main.dart
+    │
+    ├── models/
+    │   ├── auth/
+    │   │   └── user_model.dart
     │   │
-    │   ├── models/
-    │   │   ├── user_model.dart
+    │   ├── order/
     │   │   ├── order_model.dart
-    │   │   ├── chat_model.dart
+    │   │   ├── revision_model.dart
+    │   │   └── transaction_model.dart
+    │   │
+    │   ├── chat/
+    │   │   └── chat_message_model.dart
+    │   │
+    │   ├── payment/
     │   │   └── payment_model.dart
     │   │
-    │   ├── services/
-    │   │   ├── api_service.dart
-    │   │   ├── chat_service.dart
-    │   │   ├── payment_service.dart
+    │   └── portfolio/
+    │       └── portfolio_model.dart
+    │
+    ├── services/
+    │   ├── core/
+    │   │   └── api_service.dart
+    │   │
+    │   ├── auth/
     │   │   └── auth_service.dart
     │   │
-    │   ├── screens/
-    │   │   ├── auth/
-    │   │   │   ├── login_screen.dart
-    │   │   │   ├── register_screen.dart
-    │   │   │   └── forgot_password_screen.dart
-    │   │   │
-    │   │   ├── dashboard/
-    │   │   │   ├── customer_dashboard.dart
-    │   │   │   ├── designer_dashboard.dart
-    │   │   │   └── admin_dashboard.dart
-    │   │   │
-    │   │   ├── order/
-    │   │   │   ├── order_screen.dart
-    │   │   │   ├── order_detail_screen.dart
-    │   │   │   └── revision_screen.dart
-    │   │   │
-    │   │   ├── chat/
-    │   │   │   ├── chat_room_screen.dart
-    │   │   │   └── chat_list_screen.dart
-    │   │   │
-    │   │   ├── payment/
-    │   │   │   ├── payment_status_screen.dart
-    │   │   │   └── invoice_screen.dart
-    │   │   │
-    │   │   └── portfolio/
-    │   │       ├── portfolio_screen.dart
-    │   │       └── upload_design_screen.dart
+    │   ├── order/
+    │   │   └── order_service.dart
     │   │
-    │   ├── widgets/
-    │   │   ├── custom_button.dart
-    │   │   ├── chat_bubble.dart
-    │   │   ├── progress_card.dart
-    │   │   └── stat_card.dart
+    │   ├── chat/
+    │   │   └── chat_service.dart
     │   │
-    │   └── utils/
-    │       ├── constants.dart
-    │       └── routes.dart
+    │   ├── payment/
+    │   │   └── payment_service.dart
+    │   │
+    │   └── portfolio/
+    │       └── portfolio_service.dart
     │
-    └── pubspec.yaml
+    ├── screens/
+    │   ├── auth/
+    │   │   ├── login_screen.dart
+    │   │   ├── register_screen.dart
+    │   │   └── forgot_password_screen.dart
+    │   │
+    │   ├── dashboard/
+    │   │   ├── customer_dashboard.dart
+    │   │   ├── designer_dashboard.dart
+    │   │   └── admin_dashboard.dart
+    │   │
+    │   ├── order/
+    │   │   ├── order_screen.dart
+    │   │   ├── order_detail_screen.dart
+    │   │   ├── revision_screen.dart
+    │   │   └── history_transaction_screen.dart
+    │   │
+    │   ├── chat/
+    │   │   ├── chat_room_screen.dart
+    │   │   └── chat_list_screen.dart
+    │   │
+    │   ├── payment/
+    │   │   ├── payment_status_screen.dart
+    │   │   └── invoice_screen.dart
+    │   │
+    │   ├── portfolio/
+    │   │   ├── portfolio_screen.dart
+    │   │   └── upload_design_screen.dart
+    │   │
+    │   └── profile/
+    │       ├── customer_profile_screen.dart
+    │       └── designer_profile_screen.dart
+    │
+    ├── widgets/
+    │   ├── common/
+    │   │   ├── custom_button.dart
+    │   │   └── custom_textfield.dart
+    │   │
+    │   ├── chat/
+    │   │   └── chat_bubble.dart
+    │   │
+    │   └── dashboard/
+    │       └── stat_card.dart
+    │
+    └── utils/
+        ├── constants.dart
+        └── routes.dart
