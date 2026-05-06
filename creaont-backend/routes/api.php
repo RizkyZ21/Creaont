@@ -6,47 +6,25 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\PortfolioController;
 
-/*
-|--------------------------------------------------------------------------
-| Public Routes
-|--------------------------------------------------------------------------
-*/
-
-Route::post('/login', [AuthController::class, 'login']);
+Route::post('/login',    [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
-
-/*
-|--------------------------------------------------------------------------
-| Order Routes
-|--------------------------------------------------------------------------
-*/
-
-Route::get('/orders', [OrderController::class, 'index']);
-Route::post('/orders', [OrderController::class, 'store']);
-
-/*
-|--------------------------------------------------------------------------
-| Portfolio Routes
-|--------------------------------------------------------------------------
-*/
 
 Route::get('/portfolios', [PortfolioController::class, 'index']);
 
-/*
-|--------------------------------------------------------------------------
-| Chat Routes
-|--------------------------------------------------------------------------
-*/
-
-Route::get('/chat/{orderId}', [ChatController::class, 'messages']);
-Route::post('/chat/send', [ChatController::class, 'send']);
-
-/*
-|--------------------------------------------------------------------------
-| Protected Routes
-|--------------------------------------------------------------------------
-*/
-
 Route::middleware('auth:sanctum')->group(function () {
-    Route::apiResource('portfolios', PortfolioController::class);
+    Route::post('/logout',         [AuthController::class, 'logout']);
+    Route::get('/me',              [AuthController::class, 'me']);
+    Route::post('/update-profile', [AuthController::class, 'updateProfile']);
+
+    Route::get('/orders',      [OrderController::class, 'index']);
+    Route::post('/orders',     [OrderController::class, 'store']);
+    Route::get('/orders/{id}', [OrderController::class, 'show']);
+    Route::put('/orders/{id}', [OrderController::class, 'update']);
+
+    Route::post('/portfolios',        [PortfolioController::class, 'store']);
+    Route::put('/portfolios/{id}',    [PortfolioController::class, 'update']);
+    Route::delete('/portfolios/{id}', [PortfolioController::class, 'destroy']);
+
+    Route::get('/chat/{orderId}', [ChatController::class, 'messages']);
+    Route::post('/chat/send',     [ChatController::class, 'send']);
 });
