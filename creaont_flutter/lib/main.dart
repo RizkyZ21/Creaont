@@ -1,27 +1,62 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'providers/auth_provider.dart';
-import 'screens/auth/login_page.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-void main() {
+import 'providers/auth_provider.dart';
+import 'screens/auth/login_screen.dart';
+import 'screens/auth/register_screen.dart';
+import 'screens/home/home_page.dart';
+import 'screens/dashboard/customer_dashboard.dart';
+import 'screens/dashboard/designer_dashboard.dart';
+import 'screens/dashboard/admin_dashboard.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Cek apakah sudah ada token (auto-login)
+  final prefs = await SharedPreferences.getInstance();
+  final token = prefs.getString('token') ?? '';
+  final initialRoute = token.isNotEmpty ? '/home' : '/login';
+
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
       ],
-      child: const MyApp(),
+      child: MyApp(initialRoute: initialRoute),
     ),
   );
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final String initialRoute;
+  const MyApp({super.key, required this.initialRoute});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      title: 'Creaont',
       debugShowCheckedModeBanner: false,
-      home: LoginPage(),
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF9D71FD),
+          brightness: Brightness.dark,
+        ),
+        useMaterial3: true,
+      ),
+
+      // ── Route awal ──────────────────────────────────────
+      initialRoute: initialRoute,
+
+      // ── Named routes ────────────────────────────────────
+      routes: {
+        '/login':              (_) => const LoginScreen(),
+        '/register':           (_) => const RegisterScreen(),
+        '/home':               (_) => const HomePage(),
+        '/customer-dashboard': (_) => const CustomerDashboard(),
+        '/dashboard':          (_) => const DesignerDashboard(),
+        '/admin-dashboard':    (_) => const AdminDashboard(),
+      },
     );
   }
 }

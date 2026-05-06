@@ -1,3 +1,3 @@
-class Config {
-  static const String baseUrl = "http://localhost:8000/api";
-}
+// File ini adalah redirect agar import lama tidak error.
+// Gunakan import dari services/core/api_service.dart untuk fitur baru.
+export '../../services/core/api_service.dart';
