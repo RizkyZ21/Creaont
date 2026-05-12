@@ -13,6 +13,10 @@ return new class extends Migration
     {
         Schema::create('chats', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('order_id')->constrained('orders')->onDelete('cascade');
+            $table->foreignId('sender_id')->constrained('users')->onDelete('cascade');
+            $table->text('message');
+            $table->string('sender_type')->default('customer'); // 'customer' or 'designer'
             $table->timestamps();
         });
     }

@@ -13,6 +13,10 @@ return new class extends Migration
     {
         Schema::create('revisions', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('order_id')->constrained('orders')->onDelete('cascade');
+            $table->integer('revision_number')->default(1);
+            $table->text('notes')->nullable();
+            $table->string('status')->default('pending'); // 'pending', 'approved', 'rejected'
             $table->timestamps();
         });
     }
