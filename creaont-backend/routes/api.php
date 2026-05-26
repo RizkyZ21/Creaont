@@ -5,6 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\PortfolioController;
+use App\Http\Controllers\AdminController;
 
 Route::post('/login',    [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
@@ -27,4 +28,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/chat/{orderId}', [ChatController::class, 'messages']);
     Route::post('/chat/send',     [ChatController::class, 'send']);
+
+    Route::get('/admin/summary', [AdminController::class, 'summary']);
 });

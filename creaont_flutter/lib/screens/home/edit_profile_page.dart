@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../core/services/api_service.dart';
+import '../../services/auth/auth_service.dart';
 
 class EditProfilePage extends StatefulWidget {
   const EditProfilePage({super.key});
@@ -46,14 +46,14 @@ class _EditProfilePageState extends State<EditProfilePage> {
     setState(() => isLoading = true);
 
     try {
-      final res = await ApiService.updateProfile(
-        token,
-        nameController.text.trim(),
-        emailController.text.trim(),
-        "", // 🔥 BIO DIKOSONGKAN
+      final res = await AuthService.updateProfile(
+        token: token,
+        name: nameController.text.trim(),
+        email: emailController.text.trim(),
+        bio: "",
       );
 
-      if (res['status'] == true) {
+      if (res['success'] == true) {
         await prefs.setString('name', nameController.text.trim());
         await prefs.setString('email', emailController.text.trim());
 

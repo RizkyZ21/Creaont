@@ -51,7 +51,7 @@ class AuthProvider with ChangeNotifier {
         } else if (role == 'designer') {
           Navigator.pushReplacementNamed(context, '/home');
         } else if (role == 'admin') {
-          Navigator.pushReplacementNamed(context, '/home');
+          Navigator.pushReplacementNamed(context, '/admin-dashboard');
         }
       } else {
         if (!context.mounted) return;

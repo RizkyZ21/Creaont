@@ -8,30 +8,94 @@ use App\Models\Portfolio;
 use App\Models\Chat;
 use App\Models\Review;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class AdminController extends Controller
 {
+    private function stats(): array
+    {
+        return [
+            'total_users' => User::count(),
+            'total_customers' => User::where('role', 'customer')->count(),
+            'total_designers' => User::where('role', 'designer')->count(),
+            'total_admins' => User::where('role', 'admin')->count(),
+            'total_orders' => Orders::count(),
+            'pending_orders' => Orders::where('status', 'pending')->count(),
+            'in_progress_orders' => Orders::where('status', 'in_progress')->count(),
+            'completed_orders' => Orders::where('status', 'completed')->count(),
+            'total_portfolios' => Portfolio::count(),
+            'total_chats' => Chat::count(),
+            'total_reviews' => Review::count(),
+            'total_revenue' => Orders::sum('total_price'),
+        ];
+    }
+
+    public function login(Request $request)
+    {
+        $credentials = $request->validate([
+            'email' => 'required|email',
+            'password' => 'required|string',
+        ]);
+
+        if (!Auth::attempt($credentials, $request->boolean('remember'))) {
+            return back()->withInput($request->only('email'))->with('error', 'Email atau password salah');
+        }
+
+        if ($request->user()->role !== 'admin') {
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return back()->withInput($request->only('email'))->with('error', 'Akun ini bukan admin');
+        }
+
+        $request->session()->regenerate();
+
+        return redirect()->intended(route('admin.dashboard'));
+    }
+
+    public function logout(Request $request)
+    {
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()->route('admin.login')->with('success', 'Logout berhasil');
+    }
+
     /**
      * Admin Dashboard
      */
     public function dashboard()
     {
-        $stats = [
-            'total_users' => User::count(),
-            'total_customers' => User::where('role', 'customer')->count(),
-            'total_designers' => User::where('role', 'designer')->count(),
-            'total_orders' => Orders::count(),
-            'pending_orders' => Orders::where('status', 'pending')->count(),
-            'total_portfolios' => Portfolio::count(),
-            'total_revenue' => Orders::sum('total_price'),
-        ];
+        $stats = $this->stats();
 
         $recent_orders = Orders::with(['customer', 'designer'])
-            ->latest()
+            ->orderBy('created_at', 'desc')
             ->limit(10)
             ->get();
 
         return view('admin.pages.dashboard', compact('stats', 'recent_orders'));
+    }
+
+    public function summary(Request $request)
+    {
+        if ($request->user()->role !== 'admin') {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        $recentOrders = Orders::with(['customer', 'designer', 'portfolio'])
+            ->orderBy('created_at', 'desc')
+            ->limit(8)
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'stats' => $this->stats(),
+                'recent_orders' => $recentOrders,
+            ],
+        ]);
     }
 
     /**
@@ -59,6 +123,12 @@ class AdminController extends Controller
             'role' => 'required|in:customer,designer,admin',
         ]);
 
+        if ($user->role === 'admin'
+            && $request->role !== 'admin'
+            && User::where('role', 'admin')->count() <= 1) {
+            return back()->withInput()->with('error', 'Minimal harus ada satu admin aktif');
+        }
+
         $user->update($request->only('name', 'email', 'role'));
 
         return redirect()->route('admin.users')->with('success', 'User berhasil diperbarui');
@@ -67,6 +137,15 @@ class AdminController extends Controller
     public function deleteUser($id)
     {
         $user = User::findOrFail($id);
+
+        if (auth()->id() === $user->id) {
+            return back()->with('error', 'Kamu tidak bisa menghapus akun admin yang sedang dipakai');
+        }
+
+        if ($user->role === 'admin' && User::where('role', 'admin')->count() <= 1) {
+            return back()->with('error', 'Minimal harus ada satu admin aktif');
+        }
+
         $user->delete();
 
         return redirect()->route('admin.users')->with('success', 'User berhasil dihapus');
@@ -78,7 +157,7 @@ class AdminController extends Controller
     public function orders()
     {
         $orders = Orders::with(['customer', 'designer', 'portfolio'])
-            ->latest()
+            ->orderBy('created_at', 'desc')
             ->paginate(15);
         
         return view('admin.pages.orders', compact('orders'));
@@ -110,7 +189,7 @@ class AdminController extends Controller
     public function portfolios()
     {
         $portfolios = Portfolio::with('user')
-            ->latest()
+            ->orderBy('created_at', 'desc')
             ->paginate(15);
         
         return view('admin.pages.portfolios', compact('portfolios'));
@@ -130,7 +209,7 @@ class AdminController extends Controller
     public function chats()
     {
         $chats = Chat::with(['order', 'sender'])
-            ->latest()
+            ->orderBy('created_at', 'desc')
             ->paginate(20);
         
         return view('admin.pages.chats', compact('chats'));
@@ -142,7 +221,7 @@ class AdminController extends Controller
     public function reviews()
     {
         $reviews = Review::with(['order', 'designer', 'customer'])
-            ->latest()
+            ->orderBy('created_at', 'desc')
             ->paginate(15);
         
         return view('admin.pages.reviews', compact('reviews'));
