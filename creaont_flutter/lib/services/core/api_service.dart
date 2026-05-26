@@ -35,6 +35,9 @@ class ApiService {
   static String get chatSendUrl                 => '$baseUrl/chat/send';
   static String chatRoomUrl(int orderId)        => '$baseUrl/chat/$orderId';
 
+  // ── Admin endpoints ───────────────────────────────────────────────
+  static String get adminSummaryUrl             => '$baseUrl/admin/summary';
+
   // ── Helper header ─────────────────────────────────────────────────
   static Map<String, String> headers({String? token}) {
     final h = <String, String>{

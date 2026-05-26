@@ -7,15 +7,20 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::get('/login', function () {
+    return redirect()->route('admin.login');
+})->name('login');
+
 // Admin Routes
 Route::prefix('admin')->group(function () {
-    // Public admin login (will be added later)
     Route::get('/login', function () {
         return view('admin.pages.login');
     })->name('admin.login');
+    Route::post('/login', [AdminController::class, 'login'])->name('admin.login.submit');
 
     // Protected admin routes
     Route::middleware(['auth', 'admin'])->group(function () {
+        Route::post('/logout', [AdminController::class, 'logout'])->name('admin.logout');
         Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
         
         // Users

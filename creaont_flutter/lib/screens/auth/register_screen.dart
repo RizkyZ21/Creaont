@@ -32,10 +32,10 @@ class RegisterScreenState extends State<RegisterScreen> {
 
     try {
       final result = await AuthService.register(
-        nameController.text.trim(),
-        emailController.text.trim(),
-        passwordController.text.trim(),
-        selectedRole,
+        name: nameController.text.trim(),
+        email: emailController.text.trim(),
+        password: passwordController.text.trim(),
+        role: selectedRole,
       );
 
       if (!mounted) return;
@@ -44,14 +44,14 @@ class RegisterScreenState extends State<RegisterScreen> {
         isLoading = false;
       });
 
-      if (result['message'] == 'Register success') {
+      if (result['success'] == true) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Register success, please login'),
           ),
         );
 
-        Navigator.pushReplacementNamed(context, '/');
+        Navigator.pushReplacementNamed(context, '/login');
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -306,7 +306,7 @@ class RegisterScreenState extends State<RegisterScreen> {
                                   onTap: () {
                                     Navigator.pushReplacementNamed(
                                       context,
-                                      '/',
+                                      '/login',
                                     );
                                   },
                                   child: const Text(

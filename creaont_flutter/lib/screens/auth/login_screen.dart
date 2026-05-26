@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../services/auth/auth_service.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -31,8 +32,8 @@ Future<void> loginUser() async {
   });
 
   final result = await AuthService.login(
-    emailController.text.trim(),
-    passwordController.text.trim(),
+    email: emailController.text.trim(),
+    password: passwordController.text.trim(),
   );
 
   if (!mounted) return;
@@ -41,18 +42,26 @@ Future<void> loginUser() async {
     isLoading = false;
   });
 
-  if (result['message'] == 'Login success') {
-    final role = result['user']['role'];
+  if (result['success'] == true) {
+    final prefs = await SharedPreferences.getInstance();
+    final user = result['user'] as Map<String, dynamic>? ?? {};
+    final role = user['role'] ?? 'customer';
+
+    await prefs.setString('token', result['token'] ?? '');
+    await prefs.setString('name', user['name'] ?? 'User');
+    await prefs.setString('role', role);
+    await prefs.setString('email', user['email'] ?? emailController.text.trim());
+    await prefs.setInt('user_id', user['id'] ?? 0);
 
     if (role == 'customer') {
       Navigator.pushReplacementNamed(
         context,
-        '/customer-dashboard',
+        '/home',
       );
     } else if (role == 'designer') {
       Navigator.pushReplacementNamed(
         context,
-        '/dashboard',
+        '/home',
       );
     } else if (role == 'admin') {
       Navigator.pushReplacementNamed(

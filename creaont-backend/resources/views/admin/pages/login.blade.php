@@ -8,26 +8,35 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --primary: #6366f1;
-            --secondary: #8b5cf6;
+            --bg: #101827;
+            --panel: #162033;
+            --panel-soft: #1d2940;
+            --border: #263247;
+            --text: #f8fafc;
+            --muted: #94a3b8;
+            --primary: #38bdf8;
+            --danger: #fb7185;
+            --success: #34d399;
         }
 
         body {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            background: var(--bg);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text);
+            padding: 20px;
         }
 
         .login-container {
             width: 100%;
             max-width: 400px;
-            background: white;
+            background: var(--panel);
             padding: 40px;
-            border-radius: 12px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            border: 1px solid var(--border);
         }
 
         .login-logo {
@@ -41,47 +50,68 @@
         }
 
         .login-logo h3 {
-            color: var(--primary);
+            color: var(--text);
             margin-top: 10px;
             margin: 0;
         }
 
         .form-control {
             padding: 12px 15px;
-            border-radius: 6px;
-            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background-color: var(--panel-soft);
+            color: var(--text);
         }
 
         .form-control:focus {
             border-color: var(--primary);
-            box-shadow: 0 0 0 0.2rem rgba(99, 102, 241, 0.25);
+            background-color: var(--panel-soft);
+            color: var(--text);
+            box-shadow: 0 0 0 0.2rem rgba(56, 189, 248, 0.16);
+        }
+
+        .form-label,
+        .form-check-label {
+            color: var(--muted);
         }
 
         .btn-login {
             padding: 12px;
-            border-radius: 6px;
+            border-radius: 8px;
             font-weight: 600;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            border: none;
+            background: var(--primary);
+            border: 1px solid var(--primary);
             width: 100%;
+            color: #082f49;
         }
 
         .btn-login:hover {
-            background: linear-gradient(135deg, #5558e3, #7c3aed);
-            color: white;
+            background: #7dd3fc;
+            border-color: #7dd3fc;
+            color: #082f49;
         }
 
         .login-footer {
             text-align: center;
             margin-top: 20px;
             font-size: 12px;
-            color: #64748b;
+            color: var(--muted);
         }
 
         .alert {
             border: none;
-            border-radius: 6px;
+            border-radius: 8px;
             margin-bottom: 20px;
+        }
+
+        .alert-danger {
+            background-color: rgba(251, 113, 133, 0.16);
+            color: #fecdd3;
+        }
+
+        .alert-success {
+            background-color: rgba(52, 211, 153, 0.16);
+            color: #bbf7d0;
         }
     </style>
 </head>
@@ -98,11 +128,17 @@
             </div>
         @endif
 
-        <p style="text-align: center; color: #64748b; margin-bottom: 25px;">
+        @if (session('success'))
+            <div class="alert alert-success">
+                <i class="fas fa-check-circle"></i> {{ session('success') }}
+            </div>
+        @endif
+
+        <p style="text-align: center; color: var(--muted); margin-bottom: 25px;">
             Sign in with your admin credentials
         </p>
 
-        <form action="/admin/login" method="POST">
+        <form action="{{ route('admin.login.submit') }}" method="POST">
             @csrf
             
             <div class="mb-3">
@@ -112,7 +148,7 @@
 
             <div class="mb-3">
                 <label class="form-label">Password</label>
-                <input type="password" name="password" class="form-control" placeholder="••••••••" required>
+                <input type="password" name="password" class="form-control" placeholder="Password" required>
             </div>
 
             <div class="mb-3 form-check">

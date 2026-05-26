@@ -16,7 +16,12 @@ void main() async {
   // Cek apakah sudah ada token (auto-login)
   final prefs = await SharedPreferences.getInstance();
   final token = prefs.getString('token') ?? '';
-  final initialRoute = token.isNotEmpty ? '/home' : '/login';
+  final role = prefs.getString('role') ?? 'customer';
+  final initialRoute = token.isEmpty
+      ? '/login'
+      : role == 'admin'
+          ? '/admin-dashboard'
+          : '/home';
 
   runApp(
     MultiProvider(
@@ -53,9 +58,9 @@ class MyApp extends StatelessWidget {
         '/login':              (_) => const LoginScreen(),
         '/register':           (_) => const RegisterScreen(),
         '/home':               (_) => const HomePage(),
-        '/customer-dashboard': (_) => const CustomerDashboard(),
-        '/dashboard':          (_) => const DesignerDashboard(),
-        '/admin-dashboard':    (_) => const AdminDashboard(),
+        '/customer-dashboard': (_) => const CustomerDashboardScreen(),
+        '/dashboard':          (_) => const DesignerDashboardScreen(),
+        '/admin-dashboard':    (_) => const AdminDashboardScreen(),
       },
     );
   }
