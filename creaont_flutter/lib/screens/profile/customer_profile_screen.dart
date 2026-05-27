@@ -3,11 +3,7 @@ import 'package:flutter/material.dart';
 class CustomerProfileScreen extends StatelessWidget {
   const CustomerProfileScreen({super.key});
 
-  Widget profileItem(
-    BuildContext context,
-    IconData icon,
-    String title,
-  ) {
+  Widget profileItem(BuildContext context, IconData icon, String title) {
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
       padding: const EdgeInsets.all(16),
@@ -21,17 +17,10 @@ class CustomerProfileScreen extends StatelessWidget {
           const SizedBox(width: 12),
           Text(
             title,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 15,
-            ),
+            style: const TextStyle(color: Colors.white, fontSize: 15),
           ),
           const Spacer(),
-          const Icon(
-            Icons.arrow_forward_ios,
-            color: Colors.white54,
-            size: 16,
-          )
+          const Icon(Icons.arrow_forward_ios, color: Colors.white54, size: 16),
         ],
       ),
     );
@@ -52,11 +41,7 @@ class CustomerProfileScreen extends StatelessWidget {
             const CircleAvatar(
               radius: 50,
               backgroundColor: Color(0xFF9D71FD),
-              child: Icon(
-                Icons.person,
-                size: 50,
-                color: Colors.white,
-              ),
+              child: Icon(Icons.person, size: 50, color: Colors.white),
             ),
             const SizedBox(height: 16),
             const Text(
@@ -68,26 +53,10 @@ class CustomerProfileScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 30),
-            profileItem(
-              context,
-              Icons.edit,
-              'Edit Profile',
-            ),
-            profileItem(
-              context,
-              Icons.shopping_bag,
-              'My Orders',
-            ),
-            profileItem(
-              context,
-              Icons.receipt_long,
-              'Transaction History',
-            ),
-            profileItem(
-              context,
-              Icons.logout,
-              'Logout',
-            ),
+            profileItem(context, Icons.edit, 'Edit Profile'),
+            profileItem(context, Icons.shopping_bag, 'My Orders'),
+            profileItem(context, Icons.receipt_long, 'Transaction History'),
+            profileItem(context, Icons.logout, 'Logout'),
           ],
         ),
       ),
