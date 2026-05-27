@@ -57,7 +57,7 @@ Kemudian jalankan:
 ```php
 App\Models\User::create([
     'name' => 'Admin',
-    'email' => 'admin@example.com',
+    'email' => 'admin@gmail.com',
     'password' => bcrypt('password123'),
     'role' => 'admin',
 ]);
