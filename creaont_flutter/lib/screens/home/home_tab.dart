@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../order/service_option_screen.dart';
+
 class HomeTab extends StatefulWidget {
   const HomeTab({super.key});
 
@@ -19,6 +21,7 @@ class _HomeTabState extends State<HomeTab> {
 
   Future<void> loadUser() async {
     final prefs = await SharedPreferences.getInstance();
+
     setState(() {
       name = prefs.getString('name') ?? "User";
     });
@@ -49,7 +52,7 @@ class _HomeTabState extends State<HomeTab> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // 🔥 HEADER
+                    // HEADER
                     Padding(
                       padding: const EdgeInsets.all(16),
                       child: Row(
@@ -67,7 +70,7 @@ class _HomeTabState extends State<HomeTab> {
                                 style: TextStyle(color: Colors.white54),
                               ),
                               Text(
-                                name, // 🔥 DINAMIS
+                                name,
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold,
@@ -81,7 +84,7 @@ class _HomeTabState extends State<HomeTab> {
                       ),
                     ),
 
-                    // 🔥 CATEGORIES TITLE
+                    // CATEGORIES TITLE
                     const Padding(
                       padding: EdgeInsets.symmetric(horizontal: 16),
                       child: Row(
@@ -104,7 +107,7 @@ class _HomeTabState extends State<HomeTab> {
 
                     const SizedBox(height: 10),
 
-                    // 🔥 CATEGORIES
+                    // CATEGORIES
                     SizedBox(
                       height: 80,
                       child: ListView(
@@ -130,7 +133,7 @@ class _HomeTabState extends State<HomeTab> {
 
                     const SizedBox(height: 20),
 
-                    // 🔥 POPULAR TITLE
+                    // POPULAR TITLE
                     const Padding(
                       padding: EdgeInsets.symmetric(horizontal: 16),
                       child: Row(
@@ -153,7 +156,7 @@ class _HomeTabState extends State<HomeTab> {
 
                     const SizedBox(height: 10),
 
-                    // 🔥 LIST DESIGN (LOGIC TETAP)
+                    // DESIGN LIST
                     ListView.builder(
                       itemCount: designs.length,
                       shrinkWrap: true,
@@ -161,66 +164,81 @@ class _HomeTabState extends State<HomeTab> {
                       itemBuilder: (context, index) {
                         final item = designs[index];
 
-                        return Container(
-                          margin: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 8,
-                          ),
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: Colors.white10,
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 60,
-                                height: 60,
-                                decoration: BoxDecoration(
-                                  gradient: const LinearGradient(
-                                    colors: [
-                                      Color(0xFF7F00FF),
-                                      Color(0xFFE100FF),
+                        return InkWell(
+                          borderRadius: BorderRadius.circular(16),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => ServiceOptionScreen(
+                                  title: item['title']!,
+                                  price: item['price']!,
+                                ),
+                              ),
+                            );
+                          },
+                          child: Container(
+                            margin: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 8,
+                            ),
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: Colors.white10,
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 60,
+                                  height: 60,
+                                  decoration: BoxDecoration(
+                                    gradient: const LinearGradient(
+                                      colors: [
+                                        Color(0xFF7F00FF),
+                                        Color(0xFFE100FF),
+                                      ],
+                                    ),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: const Icon(
+                                    Icons.design_services,
+                                    color: Colors.white,
+                                  ),
+                                ),
+
+                                const SizedBox(width: 12),
+
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        item['title']!,
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        item['price']!,
+                                        style: const TextStyle(
+                                          color: Colors.white54,
+                                        ),
+                                      ),
                                     ],
                                   ),
-                                  borderRadius: BorderRadius.circular(12),
                                 ),
-                                child: const Icon(
-                                  Icons.design_services,
-                                  color: Colors.white,
+
+                                const Icon(
+                                  Icons.arrow_forward_ios,
+                                  color: Colors.white54,
+                                  size: 16,
                                 ),
-                              ),
-
-                              const SizedBox(width: 12),
-
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      item['title']!,
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      item['price']!,
-                                      style: const TextStyle(
-                                        color: Colors.white54,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-
-                              const Icon(
-                                Icons.arrow_forward_ios,
-                                color: Colors.white54,
-                                size: 16,
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         );
                       },

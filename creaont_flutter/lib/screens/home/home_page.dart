@@ -2,24 +2,31 @@ import 'package:flutter/material.dart';
 import 'home_tab.dart';
 import 'profile_tab.dart';
 import 'explore_tab.dart';
-import 'chat_tab.dart'; // 🔥 TAMBAH
-import 'orders_tab.dart'; // 🔥 OPSIONAL (biar index 3 gak kosong)
+import 'chat_tab.dart';
+import 'orders_tab.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  final int initialIndex;
+
+  const HomePage({super.key, this.initialIndex = 0});
 
   @override
   State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-  int currentIndex = 0;
+  late int currentIndex;
+
+  @override
+  void initState() {
+    super.initState();
+    currentIndex = widget.initialIndex;
+  }
 
   @override
   Widget build(BuildContext context) {
     Widget currentPage;
 
-    // 🔥 FIX SWITCH
     switch (currentIndex) {
       case 0:
         currentPage = const HomeTab();
@@ -28,10 +35,10 @@ class _HomePageState extends State<HomePage> {
         currentPage = const ExploreTab();
         break;
       case 2:
-        currentPage = const ChatTab(); // 🔥 INI YANG KURANG
+        currentPage = const ChatTab();
         break;
       case 3:
-        currentPage = const OrdersTab(); // 🔥 optional
+        currentPage = const OrdersTab();
         break;
       case 4:
         currentPage = const ProfileTab();
@@ -45,7 +52,6 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       backgroundColor: const Color(0xFF0F0C29),
       body: SafeArea(child: currentPage),
-
       bottomNavigationBar: Container(
         margin: const EdgeInsets.all(12),
         padding: const EdgeInsets.symmetric(vertical: 10),

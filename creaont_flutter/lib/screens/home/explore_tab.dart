@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../order/service_option_screen.dart';
+
 class ExploreTab extends StatefulWidget {
   const ExploreTab({super.key});
 
@@ -56,7 +58,6 @@ class _ExploreTabState extends State<ExploreTab> {
       child: SafeArea(
         child: Column(
           children: [
-            // 🔥 HEADER
             Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
@@ -73,7 +74,6 @@ class _ExploreTabState extends State<ExploreTab> {
 
                   const SizedBox(height: 16),
 
-                  // 🔥 SEARCH
                   Row(
                     children: [
                       Expanded(
@@ -96,7 +96,9 @@ class _ExploreTabState extends State<ExploreTab> {
                           ),
                         ),
                       ),
+
                       const SizedBox(width: 10),
+
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
@@ -110,7 +112,6 @@ class _ExploreTabState extends State<ExploreTab> {
 
                   const SizedBox(height: 16),
 
-                  // 🔥 CATEGORY FILTER
                   SizedBox(
                     height: 40,
                     child: ListView(
@@ -127,7 +128,6 @@ class _ExploreTabState extends State<ExploreTab> {
               ),
             ),
 
-            // 🔥 GRID LIST
             Expanded(
               child: filteredServices.isEmpty
                   ? const Center(
@@ -149,77 +149,97 @@ class _ExploreTabState extends State<ExploreTab> {
                       itemBuilder: (context, index) {
                         final item = filteredServices[index];
 
-                        return Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white10,
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // IMAGE DUMMY
-                              Container(
-                                height: 120,
-                                decoration: BoxDecoration(
-                                  gradient: const LinearGradient(
-                                    colors: [
-                                      Color(0xFF7F00FF),
-                                      Color(0xFFE100FF),
+                        return InkWell(
+                          borderRadius: BorderRadius.circular(16),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => ServiceOptionScreen(
+                                  title: item['title'] ?? '',
+                                  price: item['price'] ?? '',
+                                ),
+                              ),
+                            );
+                          },
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white10,
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  height: 120,
+                                  decoration: const BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        Color(0xFF7F00FF),
+                                        Color(0xFFE100FF),
+                                      ],
+                                    ),
+                                    borderRadius: BorderRadius.vertical(
+                                      top: Radius.circular(16),
+                                    ),
+                                  ),
+                                  child: const Center(
+                                    child: Icon(
+                                      Icons.design_services,
+                                      color: Colors.white,
+                                      size: 40,
+                                    ),
+                                  ),
+                                ),
+
+                                Padding(
+                                  padding: const EdgeInsets.all(10),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        item['category'] ?? 'DESIGN',
+                                        style: const TextStyle(
+                                          color: Colors.purpleAccent,
+                                          fontSize: 10,
+                                        ),
+                                      ),
+
+                                      const SizedBox(height: 4),
+
+                                      Text(
+                                        item['title'] ?? '-',
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+
+                                      const SizedBox(height: 6),
+
+                                      const Text(
+                                        "Designer",
+                                        style: TextStyle(
+                                          color: Colors.white54,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+
+                                      const SizedBox(height: 6),
+
+                                      Text(
+                                        item['price'] ?? '-',
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
                                     ],
                                   ),
-                                  borderRadius: const BorderRadius.vertical(
-                                    top: Radius.circular(16),
-                                  ),
                                 ),
-                                child: const Center(
-                                  child: Icon(
-                                    Icons.design_services,
-                                    color: Colors.white,
-                                    size: 40,
-                                  ),
-                                ),
-                              ),
-
-                              Padding(
-                                padding: const EdgeInsets.all(10),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      item['category'] ?? 'DESIGN',
-                                      style: const TextStyle(
-                                        color: Colors.purpleAccent,
-                                        fontSize: 10,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      item['title'] ?? '-',
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 6),
-                                    const Text(
-                                      "Designer",
-                                      style: TextStyle(
-                                        color: Colors.white54,
-                                        fontSize: 12,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 6),
-                                    Text(
-                                      item['price'] ?? '-',
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         );
                       },
@@ -231,7 +251,6 @@ class _ExploreTabState extends State<ExploreTab> {
     );
   }
 
-  // 🔥 CATEGORY BUTTON
   Widget _category(String text) {
     final isActive = selectedCategory == text;
 
