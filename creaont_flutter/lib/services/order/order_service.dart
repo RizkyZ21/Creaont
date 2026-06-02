@@ -3,7 +3,6 @@ import 'package:http/http.dart' as http;
 import '../core/api_service.dart';
 
 class OrderService {
-  // ── Ambil semua order user ────────────────────────────────────────
   static Future<Map<String, dynamic>> getOrders({required String token}) async {
     try {
       final response = await http.get(
@@ -16,7 +15,6 @@ class OrderService {
     }
   }
 
-  // ── Detail satu order ─────────────────────────────────────────────
   static Future<Map<String, dynamic>> getOrderDetail({
     required String token,
     required int orderId,
@@ -32,25 +30,24 @@ class OrderService {
     }
   }
 
-  // ── Buat order baru ───────────────────────────────────────────────
   static Future<Map<String, dynamic>> createOrder({
     required String token,
-    required int designerId,
     required int portfolioId,
     required String deadline,
     required int estimatedDays,
     required double totalPrice,
+    String description = '',
   }) async {
     try {
       final response = await http.post(
         Uri.parse(ApiService.ordersUrl),
         headers: ApiService.headers(token: token),
         body: jsonEncode({
-          'designer_id':    designerId,
           'portfolio_id':   portfolioId,
           'deadline':       deadline,
           'estimated_days': estimatedDays,
           'total_price':    totalPrice,
+          'description':    description,
         }),
       );
       return _parse(response);
@@ -59,7 +56,6 @@ class OrderService {
     }
   }
 
-  // ── Update status / progress order ───────────────────────────────
   static Future<Map<String, dynamic>> updateOrder({
     required String token,
     required int orderId,

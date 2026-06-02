@@ -3,7 +3,6 @@ import 'package:http/http.dart' as http;
 import '../core/api_service.dart';
 
 class ChatService {
-  // ── Ambil pesan dalam room order tertentu ─────────────────────────
   static Future<Map<String, dynamic>> getMessages({
     required String token,
     required int orderId,
@@ -19,7 +18,6 @@ class ChatService {
     }
   }
 
-  // ── Kirim pesan baru ──────────────────────────────────────────────
   static Future<Map<String, dynamic>> sendMessage({
     required String token,
     required int orderId,
@@ -29,10 +27,7 @@ class ChatService {
       final response = await http.post(
         Uri.parse(ApiService.chatSendUrl),
         headers: ApiService.headers(token: token),
-        body: jsonEncode({
-          'order_id': orderId,
-          'message':  message,
-        }),
+        body: jsonEncode({'order_id': orderId, 'message': message}),
       );
       return _parse(response);
     } catch (e) {

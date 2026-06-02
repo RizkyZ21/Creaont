@@ -11,13 +11,34 @@ class Portfolio extends Model
         'title',
         'description',
         'category',
+        'type',
         'price',
-        'image'
+        'image',
+        'raw_file',
+        'raw_file_name',
+        'raw_file_type',
+    ];
+
+    protected $casts = [
+        'price' => 'float',
     ];
 
     public function user()
     {
         return $this->belongsTo(User::class);
     }
-}
 
+    public function orders()
+    {
+        return $this->hasMany(Orders::class);
+    }
+
+    // Cek apakah user sudah membeli portfolio ini
+    public function isBoughtBy(int $userId): bool
+    {
+        return $this->orders()
+            ->where('customer_id', $userId)
+            ->whereIn('status', ['completed', 'in_progress'])
+            ->exists();
+    }
+}

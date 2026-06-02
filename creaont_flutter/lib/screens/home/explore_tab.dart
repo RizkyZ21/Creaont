@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-
+import '../../services/portfolio/portfolio_service.dart';
+import '../../services/core/api_service.dart';
 import '../order/service_option_screen.dart';
 
 class ExploreTab extends StatefulWidget {
@@ -10,240 +11,132 @@ class ExploreTab extends StatefulWidget {
 }
 
 class _ExploreTabState extends State<ExploreTab> {
-  final TextEditingController searchController = TextEditingController();
+  List<dynamic> portfolios = [];
+  bool isLoading = true;
+  String selectedCategory = 'All';
+  final _searchCtrl = TextEditingController();
 
-  final List<Map<String, String>> services = [
-    {"title": "Logo Modern", "price": "Rp 100.000", "category": "Logo"},
-    {"title": "Banner Gaming", "price": "Rp 150.000", "category": "Branding"},
-    {"title": "UI Mobile App", "price": "Rp 300.000", "category": "UI/UX"},
-  ];
-
-  List<Map<String, String>> filteredServices = [];
-
-  String selectedCategory = "All";
+  final categories = ['All', 'UI/UX', 'Logo', 'Illustration', 'Branding', 'Motion', 'Other'];
 
   @override
   void initState() {
     super.initState();
-    filteredServices = services;
+    _load();
   }
 
-  void filter() {
-    final query = searchController.text.toLowerCase();
+  @override
+  void dispose() {
+    _searchCtrl.dispose();
+    super.dispose();
+  }
 
-    final results = services.where((item) {
-      final title = (item['title'] ?? '').toLowerCase();
-      final category = item['category'] ?? '';
-
-      final matchSearch = title.contains(query);
-      final matchCategory =
-          selectedCategory == "All" || category == selectedCategory;
-
-      return matchSearch && matchCategory;
-    }).toList();
-
-    setState(() {
-      filteredServices = results;
-    });
+  Future<void> _load() async {
+    setState(() => isLoading = true);
+    final res = await PortfolioService.getPortfolios(
+      category: selectedCategory,
+      search: _searchCtrl.text.trim(),
+    );
+    if (mounted) {
+      setState(() {
+        isLoading = false;
+        portfolios = res['success'] == true ? (res['data'] as List) : [];
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Color(0xFF0F0C29), Color(0xFF302B63), Color(0xFF24243E)],
-        ),
-      ),
+      color: const Color(0xFF0F0C29),
       child: SafeArea(
         child: Column(
           children: [
             Padding(
               padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    "Explore",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12),
-                          decoration: BoxDecoration(
-                            color: Colors.white10,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: TextField(
-                            controller: searchController,
-                            onChanged: (_) => filter(),
-                            style: const TextStyle(color: Colors.white),
-                            decoration: const InputDecoration(
-                              icon: Icon(Icons.search, color: Colors.white54),
-                              hintText: "Search services...",
-                              hintStyle: TextStyle(color: Colors.white54),
-                              border: InputBorder.none,
-                            ),
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(width: 10),
-
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.white10,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const Icon(Icons.tune, color: Colors.white),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  SizedBox(
-                    height: 40,
-                    child: ListView(
-                      scrollDirection: Axis.horizontal,
-                      children: [
-                        _category("All"),
-                        _category("UI/UX"),
-                        _category("Logo"),
-                        _category("Branding"),
-                      ],
-                    ),
-                  ),
-                ],
+              child: TextField(
+                controller: _searchCtrl,
+                style: const TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  hintText: 'Cari desainer atau kategori...',
+                  hintStyle: const TextStyle(color: Colors.white38),
+                  prefixIcon: const Icon(Icons.search, color: Colors.white38),
+                  suffixIcon: _searchCtrl.text.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(Icons.clear, color: Colors.white38),
+                          onPressed: () { _searchCtrl.clear(); _load(); },
+                        )
+                      : null,
+                  filled: true,
+                  fillColor: Colors.white10,
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
+                ),
+                onSubmitted: (_) => _load(),
               ),
             ),
 
-            Expanded(
-              child: filteredServices.isEmpty
-                  ? const Center(
-                      child: Text(
-                        "No results found",
-                        style: TextStyle(color: Colors.white54),
+            // Category chips
+            SizedBox(
+              height: 40,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                itemCount: categories.length,
+                itemBuilder: (_, i) {
+                  final cat = categories[i];
+                  final active = selectedCategory == cat;
+                  return GestureDetector(
+                    onTap: () { setState(() => selectedCategory = cat); _load(); },
+                    child: Container(
+                      margin: const EdgeInsets.only(right: 8),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      decoration: BoxDecoration(
+                        gradient: active
+                            ? const LinearGradient(colors: [Color(0xFF7F00FF), Color(0xFFE100FF)])
+                            : null,
+                        color: active ? null : Colors.white10,
+                        borderRadius: BorderRadius.circular(20),
                       ),
-                    )
-                  : GridView.builder(
-                      padding: const EdgeInsets.all(16),
-                      itemCount: filteredServices.length,
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            mainAxisSpacing: 16,
-                            crossAxisSpacing: 16,
-                            childAspectRatio: 0.75,
-                          ),
-                      itemBuilder: (context, index) {
-                        final item = filteredServices[index];
-
-                        return InkWell(
-                          borderRadius: BorderRadius.circular(16),
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => ServiceOptionScreen(
-                                  title: item['title'] ?? '',
-                                  price: item['price'] ?? '',
-                                ),
-                              ),
-                            );
-                          },
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: Colors.white10,
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Container(
-                                  height: 120,
-                                  decoration: const BoxDecoration(
-                                    gradient: LinearGradient(
-                                      colors: [
-                                        Color(0xFF7F00FF),
-                                        Color(0xFFE100FF),
-                                      ],
-                                    ),
-                                    borderRadius: BorderRadius.vertical(
-                                      top: Radius.circular(16),
-                                    ),
-                                  ),
-                                  child: const Center(
-                                    child: Icon(
-                                      Icons.design_services,
-                                      color: Colors.white,
-                                      size: 40,
-                                    ),
-                                  ),
-                                ),
-
-                                Padding(
-                                  padding: const EdgeInsets.all(10),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        item['category'] ?? 'DESIGN',
-                                        style: const TextStyle(
-                                          color: Colors.purpleAccent,
-                                          fontSize: 10,
-                                        ),
-                                      ),
-
-                                      const SizedBox(height: 4),
-
-                                      Text(
-                                        item['title'] ?? '-',
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-
-                                      const SizedBox(height: 6),
-
-                                      const Text(
-                                        "Designer",
-                                        style: TextStyle(
-                                          color: Colors.white54,
-                                          fontSize: 12,
-                                        ),
-                                      ),
-
-                                      const SizedBox(height: 6),
-
-                                      Text(
-                                        item['price'] ?? '-',
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
+                      child: Text(cat, style: TextStyle(color: active ? Colors.white : Colors.white54, fontSize: 13)),
                     ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 12),
+
+            Expanded(
+              child: isLoading
+                  ? const Center(child: CircularProgressIndicator(color: Colors.purpleAccent))
+                  : portfolios.isEmpty
+                      ? const Center(child: Text('Tidak ada hasil', style: TextStyle(color: Colors.white54)))
+                      : RefreshIndicator(
+                          onRefresh: _load,
+                          child: GridView.builder(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2, crossAxisSpacing: 12, mainAxisSpacing: 12, childAspectRatio: 0.75,
+                            ),
+                            itemCount: portfolios.length,
+                            itemBuilder: (_, i) => _PortfolioCard(
+                              item: portfolios[i],
+                              onTap: () {
+                                final item = portfolios[i];
+                                final imageUrl = ApiService.imageUrl(item['image']);
+                                Navigator.push(context, MaterialPageRoute(
+                                  builder: (_) => ServiceOptionScreen(
+                                    portfolioId: item['id'],
+                                    designerId: item['user_id'],
+                                    title: item['title'],
+                                    price: 'Rp ${_fmt(item['price'])}',
+                                    description: item['description'] ?? '',
+                                    designerName: item['user']?['name'] ?? 'Designer',
+                                    imageUrl: imageUrl,
+                                  ),
+                                ));
+                              },
+                            ),
+                          ),
+                        ),
             ),
           ],
         ),
@@ -251,33 +144,62 @@ class _ExploreTabState extends State<ExploreTab> {
     );
   }
 
-  Widget _category(String text) {
-    final isActive = selectedCategory == text;
+  String _fmt(dynamic price) {
+    if (price == null) return '0';
+    final num p = price is num ? price : double.tryParse(price.toString()) ?? 0;
+    return p.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]}.');
+  }
+}
+
+class _PortfolioCard extends StatelessWidget {
+  final Map<String, dynamic> item;
+  final VoidCallback onTap;
+  const _PortfolioCard({required this.item, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final imageUrl = ApiService.imageUrl(item['image']);
+    final price = item['price'];
+    final num p = price is num ? price : double.tryParse(price.toString()) ?? 0;
+    final priceStr = p.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]}.');
 
     return GestureDetector(
-      onTap: () {
-        setState(() {
-          selectedCategory = text;
-        });
-        filter();
-      },
+      onTap: onTap,
       child: Container(
-        margin: const EdgeInsets.only(right: 10),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          gradient: isActive
-              ? const LinearGradient(
-                  colors: [Color(0xFF7F00FF), Color(0xFFE100FF)],
-                )
-              : null,
-          color: isActive ? null : Colors.white10,
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Text(
-          text,
-          style: TextStyle(color: isActive ? Colors.white : Colors.white54),
+        decoration: BoxDecoration(color: const Color(0xFF1E1B3A), borderRadius: BorderRadius.circular(16)),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: ClipRRect(
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                child: imageUrl.isNotEmpty
+                    ? Image.network(imageUrl, width: double.infinity, fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => _placeholder())
+                    : _placeholder(),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(item['title'] ?? '-', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13), maxLines: 2, overflow: TextOverflow.ellipsis),
+                  const SizedBox(height: 2),
+                  Text(item['user']?['name'] ?? '-', style: const TextStyle(color: Colors.white54, fontSize: 11)),
+                  const SizedBox(height: 4),
+                  Text('Rp $priceStr', style: const TextStyle(color: Colors.purpleAccent, fontSize: 12)),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
+
+  Widget _placeholder() => Container(
+    color: Colors.purple.withValues(alpha: 0.2),
+    child: const Center(child: Icon(Icons.design_services, color: Colors.purple, size: 40)),
+  );
 }

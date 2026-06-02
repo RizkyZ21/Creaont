@@ -10,17 +10,19 @@ class Orders extends Model
         'customer_id',
         'designer_id',
         'portfolio_id',
+        'description',
         'status',
+        'type',
         'progress',
+        'total_price',
         'deadline',
         'estimated_days',
-        'total_price',
     ];
 
     protected $casts = [
-        'deadline'    => 'date',
         'total_price' => 'float',
         'progress'    => 'integer',
+        'deadline'    => 'date',
     ];
 
     public function customer()
@@ -36,5 +38,15 @@ class Orders extends Model
     public function portfolio()
     {
         return $this->belongsTo(Portfolio::class);
+    }
+
+    public function chats()
+    {
+        return $this->hasMany(Chat::class, 'order_id');
+    }
+
+    public function invoice()
+    {
+        return $this->hasOne(Invoice::class, 'order_id');
     }
 }

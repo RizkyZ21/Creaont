@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
-
+import '../../services/order/order_service.dart';
 import '../payment/invoice_screen.dart';
 
 class CreateOrderScreen extends StatefulWidget {
   final String title;
   final String price;
+  final int portfolioId;
+  final String token;
 
   const CreateOrderScreen({
     super.key,
     required this.title,
     required this.price,
+    required this.portfolioId,
+    required this.token,
   });
 
   @override
@@ -17,11 +21,67 @@ class CreateOrderScreen extends StatefulWidget {
 }
 
 class _CreateOrderScreenState extends State<CreateOrderScreen> {
-  final TextEditingController descriptionController = TextEditingController();
+  final _descCtrl = TextEditingController();
+  final _daysCtrl = TextEditingController(text: '3');
+  bool _loading   = false;
+
+  double get _priceNum {
+    final clean = widget.price.replaceAll(RegExp(r'[^0-9]'), '');
+    return double.tryParse(clean) ?? 0;
+  }
+
+  String get _deadlineStr {
+    final days = int.tryParse(_daysCtrl.text) ?? 3;
+    final d    = DateTime.now().add(Duration(days: days));
+    return '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+  }
+
+  Future<void> _submit() async {
+    final days = int.tryParse(_daysCtrl.text) ?? 0;
+    if (days < 1) {
+      _snack('Estimasi hari minimal 1', Colors.orange);
+      return;
+    }
+
+    setState(() => _loading = true);
+
+    final res = await OrderService.createOrder(
+      token:         widget.token,
+      portfolioId:   widget.portfolioId,
+      deadline:      _deadlineStr,
+      estimatedDays: days,
+      totalPrice:    _priceNum,
+      description:   _descCtrl.text.trim(),
+    );
+
+    if (!mounted) return;
+    setState(() => _loading = false);
+
+    if (res['success'] == true) {
+      final order = res['data'];
+      Navigator.pushReplacement(context, MaterialPageRoute(
+        builder: (_) => InvoiceScreen(
+          title:   widget.title,
+          price:   widget.price,
+          orderId: order?['id'],
+          token:   widget.token,
+        ),
+      ));
+    } else {
+      _snack(res['message'] ?? 'Gagal membuat order', Colors.red);
+    }
+  }
+
+  void _snack(String msg, Color color) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(msg), backgroundColor: color),
+    );
+  }
 
   @override
   void dispose() {
-    descriptionController.dispose();
+    _descCtrl.dispose();
+    _daysCtrl.dispose();
     super.dispose();
   }
 
@@ -29,142 +89,173 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF0F0C29),
-
       appBar: AppBar(
         backgroundColor: const Color(0xFF0F0C29),
         elevation: 0,
-        title: const Text("Buat Order", style: TextStyle(color: Colors.white)),
+        iconTheme: const IconThemeData(color: Colors.white),
+        title: const Text('Konfirmasi Pesanan', style: TextStyle(color: Colors.white)),
       ),
-
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Summary box
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.white10,
+                gradient: LinearGradient(
+                  colors: [Colors.purple.withValues(alpha: 0.3), Colors.deepPurple.withValues(alpha: 0.2)],
+                ),
                 borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: Colors.purple.withValues(alpha: 0.4)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    widget.title,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
+                  Row(children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(color: Colors.purple, borderRadius: BorderRadius.circular(8)),
+                      child: const Text('PRODUCT', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
                     ),
-                  ),
-
+                  ]),
                   const SizedBox(height: 10),
-
-                  Text(
-                    widget.price,
-                    style: const TextStyle(
-                      color: Colors.greenAccent,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  Text(widget.title, style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 6),
+                  Text(widget.price, style: const TextStyle(color: Colors.purpleAccent, fontSize: 18, fontWeight: FontWeight.bold)),
                 ],
               ),
             ),
+            const SizedBox(height: 24),
 
-            const SizedBox(height: 25),
-
-            const Text(
-              "Deskripsi Pesanan",
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-
-            const SizedBox(height: 10),
-
+            // Catatan opsional
+            _label('Catatan untuk Designer (opsional)'),
             TextField(
-              controller: descriptionController,
-              maxLines: 6,
+              controller: _descCtrl,
+              maxLines: 4,
               style: const TextStyle(color: Colors.white),
               decoration: InputDecoration(
-                hintText: "Masukkan detail pesanan yang diinginkan...",
-                hintStyle: const TextStyle(color: Colors.white54),
+                hintText: 'Contoh: Warna preferensi, ukuran file, format yang diinginkan...',
+                hintStyle: const TextStyle(color: Colors.white38, fontSize: 13),
                 filled: true,
                 fillColor: Colors.white10,
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(14),
                   borderSide: BorderSide.none,
                 ),
               ),
             ),
+            const SizedBox(height: 20),
 
-            const SizedBox(height: 25),
-
-            const Text(
-              "Catatan",
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
+            // Estimasi hari
+            _label('Estimasi Hari Pengerjaan'),
+            TextField(
+              controller: _daysCtrl,
+              keyboardType: TextInputType.number,
+              style: const TextStyle(color: Colors.white),
+              decoration: InputDecoration(
+                hintText: '3',
+                hintStyle: const TextStyle(color: Colors.white38),
+                suffixText: 'hari',
+                suffixStyle: const TextStyle(color: Colors.white54),
+                filled: true,
+                fillColor: Colors.white10,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: BorderSide.none,
+                ),
               ),
             ),
+            const SizedBox(height: 20),
 
-            const SizedBox(height: 10),
+            // Deadline preview
+            ValueListenableBuilder(
+              valueListenable: _daysCtrl,
+              builder: (_, __, ___) {
+                final days = int.tryParse(_daysCtrl.text) ?? 0;
+                if (days < 1) return const SizedBox.shrink();
+                final d = DateTime.now().add(Duration(days: days));
+                final label = '${d.day} ${_months[d.month - 1]} ${d.year}';
+                return Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: Colors.white10,
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Row(children: [
+                    const Icon(Icons.event, color: Colors.purpleAccent, size: 20),
+                    const SizedBox(width: 10),
+                    Text('Deadline: $label', style: const TextStyle(color: Colors.white70)),
+                  ]),
+                );
+              },
+            ),
+            const SizedBox(height: 32),
 
+            // Ringkasan biaya
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(15),
-              decoration: BoxDecoration(
-                color: Colors.white10,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: const Text(
-                "Pastikan deskripsi yang diberikan jelas agar designer dapat memahami kebutuhan Anda.",
-                style: TextStyle(color: Colors.white70),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(color: Colors.white10, borderRadius: BorderRadius.circular(14)),
+              child: Column(
+                children: [
+                  _row('Harga Produk', widget.price),
+                  _row('Biaya Platform', 'Gratis'),
+                  const Divider(color: Colors.white24),
+                  _row('Total Bayar', widget.price, bold: true),
+                ],
               ),
             ),
-
-            const SizedBox(height: 40),
+            const SizedBox(height: 32),
 
             SizedBox(
               width: double.infinity,
-              height: 55,
+              height: 52,
               child: ElevatedButton(
+                onPressed: _loading ? null : _submit,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.purple,
-                  foregroundColor: Colors.white,
+                  disabledBackgroundColor: Colors.purple.withValues(alpha: 0.4),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                 ),
-                onPressed: () {
-                  if (descriptionController.text.trim().isEmpty) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text("Deskripsi pesanan wajib diisi"),
-                      ),
-                    );
-                    return;
-                  }
-
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => InvoiceScreen(
-                        title: widget.title,
-                        price: widget.price,
-                      ),
-                    ),
-                  );
-                },
-                child: const Text("Lanjut Pembayaran"),
+                child: _loading
+                    ? const SizedBox(
+                        width: 24, height: 24,
+                        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                      )
+                    : const Text('Lanjut ke Pembayaran',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               ),
             ),
+            const SizedBox(height: 30),
           ],
         ),
       ),
     );
   }
+
+  Widget _label(String text) => Padding(
+    padding: const EdgeInsets.only(bottom: 8),
+    child: Text(text, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+  );
+
+  Widget _row(String label, String value, {bool bold = false}) => Padding(
+    padding: const EdgeInsets.symmetric(vertical: 4),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(label, style: const TextStyle(color: Colors.white54)),
+        Text(value, style: TextStyle(
+          color: bold ? Colors.purpleAccent : Colors.white,
+          fontWeight: bold ? FontWeight.bold : FontWeight.normal,
+          fontSize: bold ? 15 : 14,
+        )),
+      ],
+    ),
+  );
+
+  static const _months = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
 }
