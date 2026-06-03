@@ -26,6 +26,13 @@ class RegisterScreenState extends State<RegisterScreen> {
   }
 
   Future<void> registerUser() async {
+    if (passwordController.text.trim().length < 8) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Password minimal 8 karakter')),
+      );
+      return;
+    }
+
     setState(() {
       isLoading = true;
     });
@@ -46,17 +53,13 @@ class RegisterScreenState extends State<RegisterScreen> {
 
       if (result['success'] == true) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Register success, please login'),
-          ),
+          const SnackBar(content: Text('Register success, please login')),
         );
 
         Navigator.pushReplacementNamed(context, '/login');
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(result['message'] ?? 'Register failed'),
-          ),
+          SnackBar(content: Text(result['message'] ?? 'Register failed')),
         );
       }
     } catch (e) {
@@ -64,11 +67,9 @@ class RegisterScreenState extends State<RegisterScreen> {
         isLoading = false;
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error: $e'),
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error: $e')));
     }
   }
 
@@ -96,9 +97,7 @@ class RegisterScreenState extends State<RegisterScreen> {
           suffixIcon: isPassword
               ? IconButton(
                   icon: Icon(
-                    isPasswordHidden
-                        ? Icons.visibility_off
-                        : Icons.visibility,
+                    isPasswordHidden ? Icons.visibility_off : Icons.visibility,
                     color: const Color(0xFF99A1AF),
                   ),
                   onPressed: () {
@@ -215,7 +214,7 @@ class RegisterScreenState extends State<RegisterScreen> {
 
                             customTextField(
                               controller: passwordController,
-                              hint: 'Password',
+                              hint: 'Password (min. 8 karakter)',
                               icon: Icons.lock_outline,
                               isPassword: true,
                             ),
@@ -237,8 +236,9 @@ class RegisterScreenState extends State<RegisterScreen> {
                                     color: Color(0xFF99A1AF),
                                   ),
                                   border: InputBorder.none,
-                                  contentPadding:
-                                      EdgeInsets.symmetric(vertical: 18),
+                                  contentPadding: EdgeInsets.symmetric(
+                                    vertical: 18,
+                                  ),
                                 ),
                                 items: const [
                                   DropdownMenuItem(
@@ -263,17 +263,14 @@ class RegisterScreenState extends State<RegisterScreen> {
                             SizedBox(
                               width: double.infinity,
                               child: ElevatedButton(
-                                onPressed:
-                                    isLoading ? null : registerUser,
+                                onPressed: isLoading ? null : registerUser,
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor:
-                                      const Color(0xFF9D71FD),
+                                  backgroundColor: const Color(0xFF9D71FD),
                                   padding: const EdgeInsets.symmetric(
                                     vertical: 16,
                                   ),
                                   shape: RoundedRectangleBorder(
-                                    borderRadius:
-                                        BorderRadius.circular(14),
+                                    borderRadius: BorderRadius.circular(14),
                                   ),
                                 ),
                                 child: isLoading
@@ -293,14 +290,11 @@ class RegisterScreenState extends State<RegisterScreen> {
                             const SizedBox(height: 22),
 
                             Row(
-                              mainAxisAlignment:
-                                  MainAxisAlignment.center,
+                              mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 const Text(
                                   "Already have an account? ",
-                                  style: TextStyle(
-                                    color: Color(0xFF99A1AF),
-                                  ),
+                                  style: TextStyle(color: Color(0xFF99A1AF)),
                                 ),
                                 InkWell(
                                   onTap: () {
@@ -318,13 +312,13 @@ class RegisterScreenState extends State<RegisterScreen> {
                                   ),
                                 ),
                               ],
-                            )
+                            ),
                           ],
                         ),
-                      )
+                      ),
                     ],
                   ),
-                )
+                ),
               ],
             ),
           ),

@@ -10,20 +10,30 @@
                 <h5 style="margin: 0; color: var(--primary);">Order Details</h5>
             </div>
             <div style="padding: 20px;">
+                @if ($order->portfolio?->image)
+                    <div style="margin-bottom: 20px;">
+                        <label class="text-muted">Preview Gambar:</label>
+                        <div style="margin-top: 8px; overflow: hidden; border-radius: 8px; border: 1px solid var(--border); background: var(--panel-soft);">
+                            <img src="{{ asset('storage/' . ltrim(preg_replace('#^storage/#', '', $order->portfolio->image), '/')) }}"
+                                alt="{{ $order->portfolio->title ?? 'Portfolio preview' }}"
+                                style="width: 100%; max-height: 320px; object-fit: cover; display: block;">
+                        </div>
+                    </div>
+                @endif
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <label class="text-muted">Customer:</label>
-                        <p><strong>{{ $order->customer->name }}</strong></p>
+                        <p><strong>{{ $order->customer->name ?? 'N/A' }}</strong></p>
                     </div>
                     <div class="col-md-6">
                         <label class="text-muted">Designer:</label>
-                        <p><strong>{{ $order->designer->name }}</strong></p>
+                        <p><strong>{{ $order->designer->name ?? 'N/A' }}</strong></p>
                     </div>
                 </div>
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <label class="text-muted">Portfolio:</label>
-                        <p><strong>{{ $order->portfolio->title }}</strong></p>
+                        <p><strong>{{ $order->portfolio->title ?? 'N/A' }}</strong></p>
                     </div>
                     <div class="col-md-6">
                         <label class="text-muted">Status:</label>

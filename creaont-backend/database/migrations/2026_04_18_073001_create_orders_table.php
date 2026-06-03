@@ -15,7 +15,7 @@ return new class extends Migration
         $table->id();
         $table->foreignId('customer_id')->constrained('users');
         $table->foreignId('designer_id')->constrained('users');
-        $table->foreignId('portfolio_id')->constrained();
+        $table->foreignId('portfolio_id')->nullable()->constrained()->nullOnDelete();
         $table->string('status')->default('pending');
         $table->integer('progress')->default(0);
         $table->date('deadline');

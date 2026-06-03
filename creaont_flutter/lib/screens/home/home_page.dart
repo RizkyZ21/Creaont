@@ -63,7 +63,7 @@ class _HomePageState extends State<HomePage> {
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             _navItem(Icons.home, "Home", 0),
-            _navItem(Icons.search, "Explore", 1),
+            _navItem(Icons.design_services, "Service", 1),
             _navItem(Icons.chat_bubble_outline, "Chat", 2),
             _navItem(Icons.shopping_bag_outlined, "Orders", 3),
             _navItem(Icons.person, "Profile", 4),

@@ -144,7 +144,11 @@ class _StatsGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.sizeOf(context).width;
-    final columns = width >= 900 ? 4 : width >= 620 ? 3 : 2;
+    final columns = width >= 900
+        ? 4
+        : width >= 620
+        ? 3
+        : 2;
 
     return GridView.count(
       crossAxisCount: columns,
@@ -154,24 +158,69 @@ class _StatsGrid extends StatelessWidget {
       physics: const NeverScrollableScrollPhysics(),
       childAspectRatio: width < 380 ? 1.15 : 1.35,
       children: [
-        _StatCard('Users', stats['total_users'], Icons.people_alt, const Color(0xFF38BDF8)),
-        _StatCard('Designer', stats['total_designers'], Icons.brush, const Color(0xFFA78BFA)),
-        _StatCard('Order', stats['total_orders'], Icons.shopping_bag, const Color(0xFFFBBF24)),
-        _StatCard('Pending', stats['pending_orders'], Icons.pending_actions, const Color(0xFFFB7185)),
-        _StatCard('Progress', stats['in_progress_orders'], Icons.timelapse, const Color(0xFF2DD4BF)),
-        _StatCard('Selesai', stats['completed_orders'], Icons.check_circle, const Color(0xFF34D399)),
-        _StatCard('Portfolio', stats['total_portfolios'], Icons.image, const Color(0xFF60A5FA)),
-        _StatCard('Revenue', _currency(stats['total_revenue']), Icons.payments, const Color(0xFFF472B6)),
+        _StatCard(
+          'Users',
+          stats['total_users'],
+          Icons.people_alt,
+          const Color(0xFF38BDF8),
+        ),
+        _StatCard(
+          'Designer',
+          stats['total_designers'],
+          Icons.brush,
+          const Color(0xFFA78BFA),
+        ),
+        _StatCard(
+          'Order',
+          stats['total_orders'],
+          Icons.shopping_bag,
+          const Color(0xFFFBBF24),
+        ),
+        _StatCard(
+          'Pending',
+          stats['pending_orders'],
+          Icons.pending_actions,
+          const Color(0xFFFB7185),
+        ),
+        _StatCard(
+          'Progress',
+          stats['in_progress_orders'],
+          Icons.timelapse,
+          const Color(0xFF2DD4BF),
+        ),
+        _StatCard(
+          'Selesai',
+          stats['completed_orders'],
+          Icons.check_circle,
+          const Color(0xFF34D399),
+        ),
+        _StatCard(
+          'Portfolio',
+          stats['total_portfolios'],
+          Icons.image,
+          const Color(0xFF60A5FA),
+        ),
+        _StatCard(
+          'Kategori',
+          stats['total_categories'],
+          Icons.category,
+          const Color(0xFF22C55E),
+        ),
+        _StatCard(
+          'Revenue',
+          _currency(stats['total_revenue']),
+          Icons.payments,
+          const Color(0xFFF472B6),
+        ),
       ],
     );
   }
 
   static String _currency(dynamic value) {
     final number = double.tryParse(value?.toString() ?? '0') ?? 0;
-    final text = number.toStringAsFixed(0).replaceAllMapped(
-      RegExp(r'\B(?=(\d{3})+(?!\d))'),
-      (match) => '.',
-    );
+    final text = number
+        .toStringAsFixed(0)
+        .replaceAllMapped(RegExp(r'\B(?=(\d{3})+(?!\d))'), (match) => '.');
     return 'Rp $text';
   }
 }
@@ -235,6 +284,7 @@ class _OrderTile extends StatelessWidget {
     final customer = order['customer'] as Map<String, dynamic>?;
     final designer = order['designer'] as Map<String, dynamic>?;
     final portfolio = order['portfolio'] as Map<String, dynamic>?;
+    final imageUrl = ApiService.imageUrl(portfolio?['image']?.toString());
     final progress = order['progress'] ?? 0;
 
     return Container(
@@ -249,25 +299,36 @@ class _OrderTile extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              _OrderPreview(imageUrl: imageUrl),
+              const SizedBox(width: 12),
               Expanded(
-                child: Text(
-                  '#${order['id']} - ${portfolio?['title'] ?? 'Order'}',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700,
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '#${order['id']} - ${portfolio?['title'] ?? 'Order'}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      '${customer?['name'] ?? 'Customer'} -> ${designer?['name'] ?? 'Designer'}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(color: Color(0xFFCBD5E1)),
+                    ),
+                  ],
                 ),
               ),
+              const SizedBox(width: 10),
               _StatusBadge(status: order['status']?.toString() ?? 'pending'),
             ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            '${customer?['name'] ?? 'Customer'} -> ${designer?['name'] ?? 'Designer'}',
-            style: const TextStyle(color: Color(0xFFCBD5E1)),
           ),
           const SizedBox(height: 10),
           ClipRRect(
@@ -280,6 +341,32 @@ class _OrderTile extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _OrderPreview extends StatelessWidget {
+  const _OrderPreview({required this.imageUrl});
+
+  final String imageUrl;
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        width: 58,
+        height: 58,
+        color: const Color(0xFF263247),
+        child: imageUrl.isEmpty
+            ? const Icon(Icons.image_not_supported, color: Color(0xFF94A3B8))
+            : Image.network(
+                imageUrl,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) =>
+                    const Icon(Icons.broken_image, color: Color(0xFF94A3B8)),
+              ),
       ),
     );
   }
@@ -303,12 +390,16 @@ class _StatusBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.16),
+        color: color.withValues(alpha: 0.16),
         borderRadius: BorderRadius.circular(999),
       ),
       child: Text(
         status.replaceAll('_', ' '),
-        style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w700),
+        style: TextStyle(
+          color: color,
+          fontSize: 12,
+          fontWeight: FontWeight.w700,
+        ),
       ),
     );
   }
@@ -322,7 +413,10 @@ class _EmptyState extends StatelessWidget {
     return const Padding(
       padding: EdgeInsets.symmetric(vertical: 32),
       child: Center(
-        child: Text('Belum ada order', style: TextStyle(color: Color(0xFF94A3B8))),
+        child: Text(
+          'Belum ada order',
+          style: TextStyle(color: Color(0xFF94A3B8)),
+        ),
       ),
     );
   }

@@ -8,7 +8,12 @@
         <h5 style="margin: 0; color: var(--primary);">
             <i class="fas fa-users"></i> All Users
         </h5>
-        <span class="badge bg-primary">Total: {{ $users->total() }}</span>
+        <div>
+            <a href="{{ route('admin.create-user') }}" class="btn btn-sm btn-primary">
+                <i class="fas fa-plus"></i> Add User
+            </a>
+            <span class="badge bg-primary">Total: {{ $users->total() }}</span>
+        </div>
     </div>
     <table class="table">
         <thead>

@@ -1,5 +1,8 @@
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../services/core/api_service.dart';
 import '../../services/auth/auth_service.dart';
 
 class EditProfilePage extends StatefulWidget {
@@ -14,6 +17,9 @@ class _EditProfilePageState extends State<EditProfilePage> {
   final emailController = TextEditingController();
 
   bool isLoading = false;
+  String avatar = '';
+  XFile? avatarFile;
+  Uint8List? avatarBytes;
 
   @override
   void initState() {
@@ -27,6 +33,17 @@ class _EditProfilePageState extends State<EditProfilePage> {
     setState(() {
       nameController.text = prefs.getString('name') ?? '';
       emailController.text = prefs.getString('email') ?? '';
+      avatar = prefs.getString('avatar') ?? '';
+    });
+  }
+
+  Future<void> pickAvatar() async {
+    final picked = await ImagePicker().pickImage(source: ImageSource.gallery);
+    if (picked == null) return;
+    final bytes = await picked.readAsBytes();
+    setState(() {
+      avatarFile = picked;
+      avatarBytes = bytes;
     });
   }
 
@@ -51,11 +68,17 @@ class _EditProfilePageState extends State<EditProfilePage> {
         name: nameController.text.trim(),
         email: emailController.text.trim(),
         bio: "",
+        avatar: avatarFile,
       );
 
       if (res['success'] == true) {
+        final user = res['user'] as Map<String, dynamic>?;
         await prefs.setString('name', nameController.text.trim());
         await prefs.setString('email', emailController.text.trim());
+        final newAvatar = user?['avatar']?.toString() ?? avatar;
+        if (newAvatar.isNotEmpty) {
+          await prefs.setString('avatar', newAvatar);
+        }
 
         ScaffoldMessenger.of(
           context,
@@ -116,19 +139,29 @@ class _EditProfilePageState extends State<EditProfilePage> {
               Stack(
                 alignment: Alignment.center,
                 children: [
-                  const CircleAvatar(
+                  CircleAvatar(
                     radius: 50,
-                    backgroundImage: NetworkImage("https://i.pravatar.cc/150"),
+                    backgroundImage: avatarBytes != null
+                        ? MemoryImage(avatarBytes!)
+                        : (avatar.isNotEmpty
+                                  ? NetworkImage(ApiService.imageUrl(avatar))
+                                  : const NetworkImage(
+                                      "https://i.pravatar.cc/150",
+                                    ))
+                              as ImageProvider,
                   ),
-                  Container(
-                    width: 100,
-                    height: 100,
-                    decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.4),
-                      shape: BoxShape.circle,
+                  GestureDetector(
+                    onTap: pickAvatar,
+                    child: Container(
+                      width: 100,
+                      height: 100,
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.4),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.camera_alt, color: Colors.white),
                     ),
                   ),
-                  const Icon(Icons.camera_alt, color: Colors.white),
                 ],
               ),
 

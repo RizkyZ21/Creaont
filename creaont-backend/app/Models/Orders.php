@@ -17,6 +17,10 @@ class Orders extends Model
         'total_price',
         'deadline',
         'estimated_days',
+        'payment_status',
+        'payment_reference',
+        'payment_token',
+        'payment_url',
     ];
 
     protected $casts = [
@@ -48,5 +52,15 @@ class Orders extends Model
     public function invoice()
     {
         return $this->hasOne(Invoice::class, 'order_id');
+    }
+
+    public function designFiles()
+    {
+        return $this->hasMany(DesignFile::class, 'order_id');
+    }
+
+    public function latestDesignFile()
+    {
+        return $this->hasOne(DesignFile::class, 'order_id')->latestOfMany();
     }
 }

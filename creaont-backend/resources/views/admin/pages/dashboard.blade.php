@@ -31,16 +31,22 @@
 </div>
 
 <div class="row mb-4">
-    <div class="col-md-6">
+    <div class="col-md-4">
         <div class="stat-card">
             <div class="stat-card-title">Total Orders</div>
             <div class="stat-card-value">{{ $stats['total_orders'] }}</div>
         </div>
     </div>
-    <div class="col-md-6">
+    <div class="col-md-4">
         <div class="stat-card">
             <div class="stat-card-title">Total Portfolios</div>
             <div class="stat-card-value">{{ $stats['total_portfolios'] }}</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="stat-card-title">Total Categories</div>
+            <div class="stat-card-value">{{ $stats['total_categories'] }}</div>
         </div>
     </div>
 </div>
@@ -57,6 +63,7 @@
                 <thead>
                     <tr>
                         <th>Order ID</th>
+                        <th>Preview</th>
                         <th>Customer</th>
                         <th>Designer</th>
                         <th>Status</th>
@@ -69,6 +76,17 @@
                     @forelse ($recent_orders as $order)
                         <tr>
                             <td><strong>#{{ $order->id }}</strong></td>
+                            <td>
+                                @if ($order->portfolio?->image)
+                                    <img src="{{ asset('storage/' . ltrim(preg_replace('#^storage/#', '', $order->portfolio->image), '/')) }}"
+                                        alt="{{ $order->portfolio->title ?? 'Portfolio preview' }}"
+                                        style="width: 56px; height: 56px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border);">
+                                @else
+                                    <div style="width: 56px; height: 56px; border-radius: 8px; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; color: var(--muted); background: var(--panel-soft);">
+                                        <i class="fas fa-image"></i>
+                                    </div>
+                                @endif
+                            </td>
                             <td>{{ $order->customer->name ?? 'N/A' }}</td>
                             <td>{{ $order->designer->name ?? 'N/A' }}</td>
                             <td>
@@ -97,7 +115,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="text-center text-muted py-4">
+                            <td colspan="8" class="text-center text-muted py-4">
                                 No orders yet
                             </td>
                         </tr>

@@ -326,8 +326,11 @@
             <a href="{{ route('admin.dashboard') }}" class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
                 <i class="fas fa-chart-line"></i> Dashboard
             </a>
-            <a href="{{ route('admin.users') }}" class="nav-link {{ request()->routeIs('admin.users*') ? 'active' : '' }}">
+            <a href="{{ route('admin.users') }}" class="nav-link {{ request()->routeIs('admin.users*', 'admin.create-user', 'admin.edit-user') ? 'active' : '' }}">
                 <i class="fas fa-users"></i> Users
+            </a>
+            <a href="{{ route('admin.categories') }}" class="nav-link {{ request()->routeIs('admin.categories*', 'admin.create-category', 'admin.edit-category') ? 'active' : '' }}">
+                <i class="fas fa-tags"></i> Categories
             </a>
             <a href="{{ route('admin.orders') }}" class="nav-link {{ request()->routeIs('admin.orders*') ? 'active' : '' }}">
                 <i class="fas fa-shopping-bag"></i> Orders
