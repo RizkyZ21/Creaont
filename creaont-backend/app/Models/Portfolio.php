@@ -33,12 +33,11 @@ class Portfolio extends Model
         return $this->hasMany(Orders::class);
     }
 
-    // Cek apakah user sudah membeli portfolio ini
     public function isBoughtBy(int $userId): bool
     {
         return $this->orders()
             ->where('customer_id', $userId)
-            ->whereIn('status', ['completed', 'in_progress'])
+            ->where('payment_status', 'paid')
             ->exists();
     }
 }

@@ -6,15 +6,12 @@ class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() =>
-      _LoginScreenState();
+  State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState
-    extends State<LoginScreen> {
+class _LoginScreenState extends State<LoginScreen> {
   final emailController = TextEditingController();
-  final passwordController =
-      TextEditingController();
+  final passwordController = TextEditingController();
 
   bool isPasswordHidden = true;
   bool isLoading = false;
@@ -26,59 +23,50 @@ class _LoginScreenState
     super.dispose();
   }
 
-Future<void> loginUser() async {
-  setState(() {
-    isLoading = true;
-  });
+  Future<void> loginUser() async {
+    setState(() {
+      isLoading = true;
+    });
 
-  final result = await AuthService.login(
-    email: emailController.text.trim(),
-    password: passwordController.text.trim(),
-  );
+    final result = await AuthService.login(
+      email: emailController.text.trim(),
+      password: passwordController.text.trim(),
+    );
 
-  if (!mounted) return;
+    if (!mounted) return;
 
-  setState(() {
-    isLoading = false;
-  });
+    setState(() {
+      isLoading = false;
+    });
 
-  if (result['success'] == true) {
-    final prefs = await SharedPreferences.getInstance();
-    final user = result['user'] as Map<String, dynamic>? ?? {};
-    final role = user['role'] ?? 'customer';
+    if (result['success'] == true) {
+      final prefs = await SharedPreferences.getInstance();
+      final user = result['user'] as Map<String, dynamic>? ?? {};
+      final role = user['role'] ?? 'customer';
 
-    await prefs.setString('token', result['token'] ?? '');
-    await prefs.setString('name', user['name'] ?? 'User');
-    await prefs.setString('role', role);
-    await prefs.setString('email', user['email'] ?? emailController.text.trim());
-    await prefs.setInt('user_id', user['id'] ?? 0);
-
-    if (role == 'customer') {
-      Navigator.pushReplacementNamed(
-        context,
-        '/home',
+      await prefs.setString('token', result['token'] ?? '');
+      await prefs.setString('name', user['name'] ?? 'User');
+      await prefs.setString('role', role);
+      await prefs.setString(
+        'email',
+        user['email'] ?? emailController.text.trim(),
       );
-    } else if (role == 'designer') {
-      Navigator.pushReplacementNamed(
-        context,
-        '/home',
-      );
-    } else if (role == 'admin') {
-      Navigator.pushReplacementNamed(
-        context,
-        '/admin-dashboard',
+      await prefs.setString('avatar', user['avatar'] ?? '');
+      await prefs.setInt('user_id', user['id'] ?? 0);
+
+      if (role == 'customer') {
+        Navigator.pushReplacementNamed(context, '/home');
+      } else if (role == 'designer') {
+        Navigator.pushReplacementNamed(context, '/home');
+      } else if (role == 'admin') {
+        Navigator.pushReplacementNamed(context, '/admin-dashboard');
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(result['message'] ?? 'Login failed')),
       );
     }
-  } else {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          result['message'] ?? 'Login failed',
-        ),
-      ),
-    );
   }
-}
 
   Widget customTextField({
     required TextEditingController controller,
@@ -88,31 +76,21 @@ Future<void> loginUser() async {
   }) {
     return TextField(
       controller: controller,
-      obscureText:
-          isPassword ? isPasswordHidden : false,
+      obscureText: isPassword ? isPasswordHidden : false,
       style: const TextStyle(color: Colors.white),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: const TextStyle(
-          color: Color(0xFF99A1AF),
-        ),
-        prefixIcon: Icon(
-          icon,
-          color: const Color(0xFF99A1AF),
-        ),
+        labelStyle: const TextStyle(color: Color(0xFF99A1AF)),
+        prefixIcon: Icon(icon, color: const Color(0xFF99A1AF)),
         suffixIcon: isPassword
             ? IconButton(
                 icon: Icon(
-                  isPasswordHidden
-                      ? Icons.visibility_off
-                      : Icons.visibility,
-                  color:
-                      const Color(0xFF99A1AF),
+                  isPasswordHidden ? Icons.visibility_off : Icons.visibility,
+                  color: const Color(0xFF99A1AF),
                 ),
                 onPressed: () {
                   setState(() {
-                    isPasswordHidden =
-                        !isPasswordHidden;
+                    isPasswordHidden = !isPasswordHidden;
                   });
                 },
               )
@@ -120,8 +98,7 @@ Future<void> loginUser() async {
         filled: true,
         fillColor: const Color(0xFF1E1B3A),
         border: OutlineInputBorder(
-          borderRadius:
-              BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(14),
           borderSide: BorderSide.none,
         ),
       ),
@@ -131,30 +108,24 @@ Future<void> loginUser() async {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor:
-          const Color(0xFF000000),
+      backgroundColor: const Color(0xFF000000),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
             child: Container(
               width: 420,
-              margin:
-                  const EdgeInsets.all(20),
+              margin: const EdgeInsets.all(20),
               child: Column(
                 children: [
                   Container(
                     width: double.infinity,
-                    padding:
-                        const EdgeInsets.symmetric(
+                    padding: const EdgeInsets.symmetric(
                       vertical: 40,
                       horizontal: 20,
                     ),
                     decoration: BoxDecoration(
-                      color: const Color(
-                          0xFF9D71FD),
-                      borderRadius:
-                          BorderRadius.circular(
-                              28),
+                      color: const Color(0xFF9D71FD),
+                      borderRadius: BorderRadius.circular(28),
                     ),
                     child: Column(
                       children: const [
@@ -169,16 +140,14 @@ Future<void> loginUser() async {
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 36,
-                            fontWeight:
-                                FontWeight.bold,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                         SizedBox(height: 8),
                         Text(
                           "Where Design Meets Talent",
                           style: TextStyle(
-                            color: Color(
-                                0xFFE0E0E0),
+                            color: Color(0xFFE0E0E0),
                             fontSize: 14,
                           ),
                         ),
@@ -187,15 +156,10 @@ Future<void> loginUser() async {
                   ),
                   const SizedBox(height: 28),
                   Container(
-                    padding:
-                        const EdgeInsets.all(
-                            24),
+                    padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
-                      color: const Color(
-                          0xFF141127),
-                      borderRadius:
-                          BorderRadius.circular(
-                              24),
+                      color: const Color(0xFF141127),
+                      borderRadius: BorderRadius.circular(24),
                     ),
                     child: Column(
                       children: [
@@ -204,87 +168,55 @@ Future<void> loginUser() async {
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 22,
-                            fontWeight:
-                                FontWeight.bold,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                        const SizedBox(
-                            height: 24),
+                        const SizedBox(height: 24),
                         customTextField(
-                          controller:
-                              emailController,
+                          controller: emailController,
                           label: 'Email',
-                          icon: Icons
-                              .email_outlined,
+                          icon: Icons.email_outlined,
                         ),
-                        const SizedBox(
-                            height: 18),
+                        const SizedBox(height: 18),
                         customTextField(
-                          controller:
-                              passwordController,
+                          controller: passwordController,
                           label: 'Password',
-                          icon: Icons
-                              .lock_outline,
+                          icon: Icons.lock_outline,
                           isPassword: true,
                         ),
-                        const SizedBox(
-                            height: 24),
+                        const SizedBox(height: 24),
                         SizedBox(
-                          width:
-                              double.infinity,
-                          child:
-                              ElevatedButton(
-                            onPressed:
-                                isLoading
-                                    ? null
-                                    : loginUser,
-                            style:
-                                ElevatedButton
-                                    .styleFrom(
-                              backgroundColor:
-                                  const Color(
-                                      0xFF9D71FD),
-                              padding:
-                                  const EdgeInsets
-                                      .symmetric(
-                                vertical: 16,
-                              ),
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: isLoading ? null : loginUser,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF9D71FD),
+                              padding: const EdgeInsets.symmetric(vertical: 16),
                             ),
                             child: isLoading
                                 ? const SizedBox(
-                                    height:
-                                        20,
+                                    height: 20,
                                     width: 20,
-                                    child:
-                                        CircularProgressIndicator(
-                                      color: Colors
-                                          .white,
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
                                     ),
                                   )
-                                : const Text(
-                                    "Sign In"),
+                                : const Text("Sign In"),
                           ),
                         ),
-                        const SizedBox(
-                            height: 20),
+                        const SizedBox(height: 20),
                         GestureDetector(
                           onTap: () {
-                            Navigator.pushNamed(
-                              context,
-                              '/register',
-                            );
+                            Navigator.pushNamed(context, '/register');
                           },
                           child: const Text(
                             "Don't have an account? Sign Up",
-                            style: TextStyle(
-                              color: Color(
-                                  0xFF9D71FD),
-                            ),
+                            style: TextStyle(color: Color(0xFF9D71FD)),
                           ),
-                        )
+                        ),
                       ],
                     ),
-                  )
+                  ),
                 ],
               ),
             ),

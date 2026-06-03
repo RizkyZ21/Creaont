@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 class AuthController extends Controller
 {
@@ -73,7 +74,57 @@ class AuthController extends Controller
     public function updateProfile(Request $request)
     {
         $user = $request->user();
-        $user->update($request->only('name', 'email', 'bio'));
+
+        $request->validate([
+            'name' => 'sometimes|string|max:255',
+            'email' => 'sometimes|email|unique:users,email,' . $user->id,
+            'bio' => 'nullable|string|max:1000',
+            'avatar' => 'sometimes|file|max:4096',
+        ]);
+
+        $data = $request->only('name', 'email', 'bio');
+
+        if ($request->hasFile('avatar')) {
+            $bytes = file_get_contents($request->file('avatar')->getRealPath(), false, null, 0, 12);
+            $isPng  = substr($bytes, 0, 4) === "\x89PNG";
+            $isJpeg = substr($bytes, 0, 3) === "\xFF\xD8\xFF";
+            $isWebp = substr($bytes, 0, 4) === 'RIFF' && substr($bytes, 8, 4) === 'WEBP';
+            if (!$isPng && !$isJpeg && !$isWebp) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Format foto tidak valid. Gunakan JPG, PNG, atau WEBP.',
+                ], 422);
+            }
+
+            if ($user->avatar) {
+                Storage::disk('public')->delete($user->avatar);
+            }
+            $data['avatar'] = $request->file('avatar')->store('profiles', 'public');
+        }
+
+        $user->update($data);
         return response()->json(['success' => true, 'user' => $user->fresh()]);
+    }
+
+    // ── Upgrade role customer → designer (permanen) ───────────────────
+    public function upgradeToDesigner(Request $request)
+    {
+        $user = $request->user();
+
+        if ($user->role === 'designer') {
+            return response()->json(['success' => false, 'message' => 'Akun sudah menjadi designer'], 422);
+        }
+        if ($user->role === 'admin') {
+            return response()->json(['success' => false, 'message' => 'Admin tidak bisa diubah rolenya'], 422);
+        }
+
+        $user->role = 'designer';
+        $user->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Akun berhasil ditingkatkan menjadi Designer',
+            'user'    => $user->fresh(),
+        ]);
     }
 }

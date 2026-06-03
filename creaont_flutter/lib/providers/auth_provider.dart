@@ -34,13 +34,14 @@ class AuthProvider with ChangeNotifier {
       // Backend sekarang return 'success' (bukan 'status')
       if (res['success'] == true) {
         final prefs = await SharedPreferences.getInstance();
-        final user  = res['user']  as Map<String, dynamic>? ?? {};
+        final user = res['user'] as Map<String, dynamic>? ?? {};
 
         await prefs.setString('token', res['token'] ?? '');
-        await prefs.setString('name',  user['name']  ?? 'User');
-        await prefs.setString('role',  user['role']  ?? 'customer');
+        await prefs.setString('name', user['name'] ?? 'User');
+        await prefs.setString('role', user['role'] ?? 'customer');
         await prefs.setString('email', user['email'] ?? email);
-        await prefs.setInt('user_id',  user['id']    ?? 0);
+        await prefs.setString('avatar', user['avatar'] ?? '');
+        await prefs.setInt('user_id', user['id'] ?? 0);
 
         final role = user['role'] ?? 'customer';
 
@@ -63,9 +64,9 @@ class AuthProvider with ChangeNotifier {
       isLoading = false;
       notifyListeners();
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error: $e')));
     }
   }
 
@@ -104,17 +105,17 @@ class AuthProvider with ChangeNotifier {
             ? msg.values.expand((e) => e is List ? e : [e]).join('\n')
             : msg?.toString() ?? 'Register gagal';
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(errorText)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(errorText)));
       }
     } catch (e) {
       isLoading = false;
       notifyListeners();
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error: $e')));
     }
   }
 

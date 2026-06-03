@@ -9,7 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('portfolios', function (Blueprint $table) {
-            $table->string('type')->default('product')->after('category'); // 'product' | 'service'
+            $table->string('type')->default('design')->after('category');
         });
     }
 
