@@ -1,8 +1,8 @@
 import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:file_picker/file_picker.dart';
 import '../../services/order/order_service.dart';
-import '../../services/portfolio/portfolio_service.dart';
 import '../../services/review/review_service.dart';
 
 class OrderDetailScreen extends StatefulWidget {
@@ -30,6 +30,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   bool isSubmittingReview = false;
   int  _selectedRating = 5;
   final _commentCtrl   = TextEditingController();
+  // Upload file hasil jasa (designer)
+  PlatformFile? _deliveryFile;
+  bool _isUploading = false;
 
   @override
   void initState() {
@@ -85,6 +88,80 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     _load();
   }
 
+  Future<void> _pickDeliveryFile() async {
+    final result = await FilePicker.pickFiles(
+      type: FileType.any,
+      withData: true,
+    );
+    if (result == null || result.files.isEmpty) return;
+    final file = result.files.first;
+    if (file.bytes == null || file.bytes!.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Gagal membaca file, coba lagi'),
+          backgroundColor: Colors.red,
+        ));
+      }
+      return;
+    }
+    setState(() => _deliveryFile = file);
+  }
+
+  Future<void> _uploadDeliveryFile() async {
+    if (_deliveryFile == null) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Pilih file hasil terlebih dahulu'),
+        backgroundColor: Colors.orange,
+      ));
+      return;
+    }
+
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: const Color(0xFF0D1F3C),
+        title: const Text('Kirim Hasil Kerja',
+            style: TextStyle(color: Colors.white)),
+        content: Text(
+          'Upload "${_deliveryFile!.name}" sebagai hasil jasa?\n\nOrder akan otomatis ditandai selesai.',
+          style: const TextStyle(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Batal'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Upload & Selesai',
+                style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+    if (confirm != true) return;
+
+    setState(() => _isUploading = true);
+    final res = await OrderService.completeServiceOrder(
+      token: widget.token,
+      orderId: widget.orderId,
+      deliveryFile: _deliveryFile!,
+    );
+    if (!mounted) return;
+    setState(() {
+      _isUploading = false;
+      if (res['success'] == true) _deliveryFile = null;
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(res['message'] ??
+          (res['success'] == true ? 'File berhasil diupload!' : 'Gagal upload')),
+      backgroundColor: res['success'] == true ? Colors.green : Colors.red,
+    ));
+    if (res['success'] == true) _load();
+  }
+
   Future<void> _submitReview() async {
     setState(() => isSubmittingReview = true);
     final res = await ReviewService.submitReview(
@@ -107,12 +184,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   }
 
   Future<void> _downloadFile() async {
-    final portfolioId = order?['portfolio']?['id'];
-    if (portfolioId == null) return;
-
     setState(() => isDownloading = true);
-    final res = await PortfolioService.downloadRawFile(
-        token: widget.token, portfolioId: portfolioId);
+    final res = await OrderService.downloadDeliveryFile(
+        token: widget.token, orderId: widget.orderId);
     if (!mounted) return;
     setState(() => isDownloading = false);
 
@@ -138,23 +212,24 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
 
   bool get _canDownload {
     final status = order?['status'];
-    final hasRaw = order?['portfolio']?['raw_file_type'] != null;
-    return widget.role != 'designer' && hasRaw &&
-        (status == 'completed');
+    final hasDelivery = order?['latest_design_file'] != null;
+    return widget.role != 'designer' &&
+        status == 'completed' &&
+        hasDelivery;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0F0C29),
+      backgroundColor: const Color(0xFF0A1628),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF0F0C29),
+        backgroundColor: const Color(0xFF0A1628),
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
         title: const Text('Detail Order', style: TextStyle(color: Colors.white)),
       ),
       body: isLoading
-          ? const Center(child: CircularProgressIndicator(color: Colors.purpleAccent))
+          ? const Center(child: CircularProgressIndicator(color: Colors.lightBlueAccent))
           : order == null
               ? const Center(child: Text('Order tidak ditemukan',
                   style: TextStyle(color: Colors.white54)))
@@ -205,7 +280,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-          color: const Color(0xFF1E1B3A), borderRadius: BorderRadius.circular(16)),
+          color: const Color(0xFF0D1F3C), borderRadius: BorderRadius.circular(16)),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
           Text('#ORD-${order!['id']}',
@@ -224,10 +299,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         if (rawType != null) ...[
           const SizedBox(height: 6),
           Row(children: [
-            const Icon(Icons.insert_drive_file, color: Colors.purpleAccent, size: 14),
+            const Icon(Icons.insert_drive_file, color: Colors.lightBlueAccent, size: 14),
             const SizedBox(width: 4),
             Text('File raw: .${rawType.toString().toUpperCase()}',
-                style: const TextStyle(color: Colors.purpleAccent, fontSize: 12)),
+                style: const TextStyle(color: Colors.lightBlueAccent, fontSize: 12)),
           ]),
         ],
       ]),
@@ -239,14 +314,14 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-          color: const Color(0xFF1E1B3A), borderRadius: BorderRadius.circular(16)),
+          color: const Color(0xFF0D1F3C), borderRadius: BorderRadius.circular(16)),
       child: Column(children: [
         Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
           const Text('Progress',
               style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
           Text('$progress%',
               style: const TextStyle(
-                  color: Colors.purpleAccent, fontWeight: FontWeight.bold)),
+                  color: Colors.lightBlueAccent, fontWeight: FontWeight.bold)),
         ]),
         const SizedBox(height: 12),
         ClipRRect(
@@ -254,7 +329,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           child: LinearProgressIndicator(
             value: progress / 100,
             backgroundColor: Colors.white10,
-            color: Colors.purpleAccent,
+            color: Colors.lightBlueAccent,
             minHeight: 10,
           ),
         ),
@@ -268,7 +343,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                   margin: const EdgeInsets.symmetric(horizontal: 2),
                   padding: const EdgeInsets.symmetric(vertical: 6),
                   decoration: BoxDecoration(
-                    color: progress >= p ? Colors.purple : Colors.white10,
+                    color: progress >= p ? const Color(0xFF0288D1) : Colors.white10,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text('$p',
@@ -283,32 +358,176 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           const SizedBox(height: 4),
           const Center(child: Text('Tap untuk update progress',
               style: TextStyle(color: Colors.white38, fontSize: 11))),
+          // ── Upload file hasil (service only) ────────────────────
+          if (order!['type'] == 'service') ...[
+            const SizedBox(height: 16),
+            const Divider(color: Colors.white12),
+            const SizedBox(height: 10),
+            Row(
+              children: const [
+                Icon(Icons.upload_file, color: Colors.lightBlueAccent, size: 16),
+                SizedBox(width: 6),
+                Text(
+                  'Kirim File Hasil Jasa',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            const Text(
+              'Upload file hasil kerja untuk menyelesaikan order.',
+              style: TextStyle(color: Colors.white38, fontSize: 12),
+            ),
+            const SizedBox(height: 10),
+            // Pilih file
+            GestureDetector(
+              onTap: _isUploading ? null : _pickDeliveryFile,
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: Colors.white10,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: _deliveryFile != null
+                        ? Colors.green.withValues(alpha: 0.5)
+                        : Colors.lightBlueAccent.withValues(alpha: 0.4),
+                  ),
+                ),
+                child: _deliveryFile == null
+                    ? Row(
+                        children: const [
+                          Icon(Icons.attach_file,
+                              color: Colors.lightBlueAccent, size: 22),
+                          SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              'Tap untuk pilih file hasil kerja',
+                              style: TextStyle(
+                                  color: Colors.white60, fontSize: 13),
+                            ),
+                          ),
+                          Icon(Icons.chevron_right, color: Colors.white24),
+                        ],
+                      )
+                    : Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(7),
+                            decoration: BoxDecoration(
+                              color: Colors.green.withValues(alpha: 0.2),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Icon(Icons.insert_drive_file,
+                                color: Colors.green, size: 22),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  _deliveryFile!.name,
+                                  style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 13),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  _fmtSize(_deliveryFile!.size),
+                                  style: const TextStyle(
+                                      color: Colors.white54, fontSize: 11),
+                                ),
+                              ],
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: () => setState(() => _deliveryFile = null),
+                            child: const Icon(Icons.close,
+                                color: Colors.white38, size: 18),
+                          ),
+                        ],
+                      ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                icon: _isUploading
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                            color: Colors.white, strokeWidth: 2))
+                    : const Icon(Icons.cloud_upload_outlined),
+                label: Text(
+                    _isUploading ? 'Mengupload...' : 'Upload & Selesaikan Order'),
+                onPressed:
+                    (_isUploading || _deliveryFile == null) ? null : _uploadDeliveryFile,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  disabledBackgroundColor: Colors.white10,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                ),
+              ),
+            ),
+          ],
         ],
       ]),
     );
   }
 
   Widget _downloadCard() {
-    final rawType = order!['portfolio']?['raw_file_type']?.toString().toUpperCase() ?? 'FILE';
+    final deliveryFile = order!['latest_design_file'] as Map<String, dynamic>?;
+    final fileType = (deliveryFile?['file_type'] ?? 'file').toString().toUpperCase();
+    final fileName = deliveryFile?['file_name'] ?? 'File Hasil Jasa';
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [Colors.purple.withValues(alpha: 0.2), Colors.deepPurple.withValues(alpha: 0.1)],
+          colors: [const Color(0xFF0288D1).withValues(alpha: 0.2), const Color(0xFF0277BD).withValues(alpha: 0.1)],
         ),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.purple.withValues(alpha: 0.4)),
+        border: Border.all(color: const Color(0xFF0288D1).withValues(alpha: 0.4)),
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         const Row(children: [
-          Icon(Icons.download_rounded, color: Colors.purpleAccent),
+          Icon(Icons.download_rounded, color: Colors.lightBlueAccent),
           SizedBox(width: 8),
-          Text('File Desain',
+          Text('File Hasil Jasa',
               style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
         ]),
         const SizedBox(height: 8),
-        Text('File raw (.$rawType) tersedia untuk didownload.',
-            style: const TextStyle(color: Colors.white70, fontSize: 13)),
+        Row(children: [
+          const Icon(Icons.insert_drive_file, color: Colors.white54, size: 14),
+          const SizedBox(width: 4),
+          Expanded(
+            child: Text(
+              fileName,
+              style: const TextStyle(color: Colors.white70, fontSize: 13),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+            decoration: BoxDecoration(
+              color: Colors.lightBlueAccent.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Text('.$fileType',
+                style: const TextStyle(color: Colors.lightBlueAccent, fontSize: 11, fontWeight: FontWeight.bold)),
+          ),
+        ]),
         const SizedBox(height: 12),
         SizedBox(
           width: double.infinity,
@@ -317,10 +536,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                 ? const SizedBox(width: 16, height: 16,
                     child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
                 : const Icon(Icons.download),
-            label: Text(isDownloading ? 'Mengunduh...' : 'Download .$rawType'),
+            label: Text(isDownloading ? 'Mengunduh...' : 'Download File Hasil'),
             onPressed: (isDownloading) ? null : _downloadFile,
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.purple,
+              backgroundColor: const Color(0xFF0288D1),
               disabledBackgroundColor: Colors.white10,
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -337,7 +556,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E1B3A),
+        color: const Color(0xFF0D1F3C),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.amber.withValues(alpha: 0.3)),
       ),
@@ -433,10 +652,12 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
 
   Widget _designerActions() {
     final status = order!['status'];
+    final isService = order!['type'] == 'service';
     return Column(children: [
       if (status == 'pending')
         _btn('Mulai Pengerjaan', Colors.blue, () => _updateStatus('in_progress')),
-      if (status == 'in_progress') ...[
+      // Untuk jasa: "Tandai Selesai" disembunyikan — diselesaikan via upload file di progress card
+      if (status == 'in_progress' && !isService) ...[
         const SizedBox(height: 8),
         _btn('Tandai Selesai', Colors.green, () => _updateStatus('completed')),
       ],
@@ -464,6 +685,11 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   }
 
   // ─────────── Helpers ───────────────────────────────────────────────
+  String _fmtSize(int bytes) {
+    if (bytes < 1024) return '$bytes B';
+    if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
+    return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
+  }
   Widget _btn(String label, Color color, VoidCallback onTap) => SizedBox(
     width: double.infinity,
     child: ElevatedButton(

@@ -13,7 +13,7 @@ class _RevisionScreenState extends State<RevisionScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0F0C29),
+      backgroundColor: const Color(0xFF0A1628),
 
       appBar: AppBar(title: const Text("Revision")),
 

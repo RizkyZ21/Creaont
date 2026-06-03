@@ -85,7 +85,7 @@ class _ExploreTabState extends State<ExploreTab> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: const Color(0xFF0F0C29),
+      color: const Color(0xFF0A1628),
       child: SafeArea(
         child: Column(
           children: [
@@ -142,7 +142,7 @@ class _ExploreTabState extends State<ExploreTab> {
                       decoration: BoxDecoration(
                         gradient: active
                             ? const LinearGradient(
-                                colors: [Color(0xFF7F00FF), Color(0xFFE100FF)],
+                                colors: [Color(0xFF0288D1), Color(0xFF29B6F6)],
                               )
                             : null,
                         color: active ? null : Colors.white10,
@@ -166,7 +166,7 @@ class _ExploreTabState extends State<ExploreTab> {
               child: isLoading
                   ? const Center(
                       child: CircularProgressIndicator(
-                        color: Colors.purpleAccent,
+                        color: Colors.lightBlueAccent,
                       ),
                     )
                   : portfolios.isEmpty
@@ -253,7 +253,7 @@ class _PortfolioCard extends StatelessWidget {
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          color: const Color(0xFF1E1B3A),
+          color: const Color(0xFF0D1F3C),
           borderRadius: BorderRadius.circular(16),
         ),
         child: Column(
@@ -299,7 +299,7 @@ class _PortfolioCard extends StatelessWidget {
                   Text(
                     'Mulai Rp $priceStr',
                     style: const TextStyle(
-                      color: Colors.purpleAccent,
+                      color: Colors.lightBlueAccent,
                       fontSize: 12,
                     ),
                   ),
@@ -313,9 +313,9 @@ class _PortfolioCard extends StatelessWidget {
   }
 
   Widget _placeholder() => Container(
-    color: Colors.purple.withValues(alpha: 0.2),
+    color: const Color(0xFF0288D1).withValues(alpha: 0.2),
     child: const Center(
-      child: Icon(Icons.design_services, color: Colors.purple, size: 40),
+      child: Icon(Icons.design_services, color: const Color(0xFF0288D1), size: 40),
     ),
   );
 }

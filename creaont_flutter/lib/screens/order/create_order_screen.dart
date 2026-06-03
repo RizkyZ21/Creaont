@@ -95,9 +95,9 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0F0C29),
+      backgroundColor: const Color(0xFF0A1628),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF0F0C29),
+        backgroundColor: const Color(0xFF0A1628),
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
         title: const Text(
@@ -117,12 +117,12 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    Colors.purple.withValues(alpha: 0.3),
-                    Colors.deepPurple.withValues(alpha: 0.2),
+                    const Color(0xFF0288D1).withValues(alpha: 0.3),
+                    const Color(0xFF0277BD).withValues(alpha: 0.2),
                   ],
                 ),
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: Colors.purple.withValues(alpha: 0.4)),
+                border: Border.all(color: const Color(0xFF0288D1).withValues(alpha: 0.4)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -135,7 +135,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.purple,
+                          color: const Color(0xFF0288D1),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
@@ -164,7 +164,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                   Text(
                     widget.price,
                     style: const TextStyle(
-                      color: Colors.purpleAccent,
+                      color: Colors.lightBlueAccent,
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
@@ -233,7 +233,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                       children: [
                         const Icon(
                           Icons.event,
-                          color: Colors.purpleAccent,
+                          color: Colors.lightBlueAccent,
                           size: 20,
                         ),
                         const SizedBox(width: 10),
@@ -301,8 +301,8 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
               child: ElevatedButton(
                 onPressed: _loading ? null : _submit,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.purple,
-                  disabledBackgroundColor: Colors.purple.withValues(alpha: 0.4),
+                  backgroundColor: const Color(0xFF0288D1),
+                  disabledBackgroundColor: const Color(0xFF0288D1).withValues(alpha: 0.4),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),
                   ),
@@ -349,7 +349,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
         Text(
           value,
           style: TextStyle(
-            color: bold ? Colors.purpleAccent : Colors.white,
+            color: bold ? Colors.lightBlueAccent : Colors.white,
             fontWeight: bold ? FontWeight.bold : FontWeight.normal,
             fontSize: bold ? 15 : 14,
           ),

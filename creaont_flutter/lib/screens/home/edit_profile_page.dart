@@ -109,7 +109,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0F0C29),
+      backgroundColor: const Color(0xFF0A1628),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
@@ -193,7 +193,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   child: Ink(
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
-                        colors: [Color(0xFF7F00FF), Color(0xFFE100FF)],
+                        colors: [Color(0xFF0288D1), Color(0xFF29B6F6)],
                       ),
                       borderRadius: BorderRadius.circular(12),
                     ),

@@ -50,13 +50,13 @@ class _HomePageState extends State<HomePage> {
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0F0C29),
+      backgroundColor: const Color(0xFF0A1628),
       body: SafeArea(child: currentPage),
       bottomNavigationBar: Container(
         margin: const EdgeInsets.all(12),
         padding: const EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
-          color: const Color(0xFF1E1B3A),
+          color: const Color(0xFF0D1F3C),
           borderRadius: BorderRadius.circular(25),
         ),
         child: Row(
@@ -91,16 +91,16 @@ class _HomePageState extends State<HomePage> {
             width: isActive ? 20 : 0,
             margin: const EdgeInsets.only(bottom: 6),
             decoration: BoxDecoration(
-              color: Colors.purpleAccent,
+              color: Colors.lightBlueAccent,
               borderRadius: BorderRadius.circular(10),
             ),
           ),
-          Icon(icon, color: isActive ? Colors.purpleAccent : Colors.white54),
+          Icon(icon, color: isActive ? Colors.lightBlueAccent : Colors.white54),
           const SizedBox(height: 4),
           Text(
             label,
             style: TextStyle(
-              color: isActive ? Colors.purpleAccent : Colors.white54,
+              color: isActive ? Colors.lightBlueAccent : Colors.white54,
               fontSize: 12,
             ),
           ),

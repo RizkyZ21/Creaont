@@ -59,13 +59,13 @@ class _ProfileTabState extends State<ProfileTab> {
       barrierDismissible: false,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) => AlertDialog(
-          backgroundColor: const Color(0xFF1E1B3A),
+          backgroundColor: const Color(0xFF0D1F3C),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),
           title: Row(
             children: const [
-              Icon(Icons.brush, color: Colors.purpleAccent),
+              Icon(Icons.brush, color: Colors.lightBlueAccent),
               SizedBox(width: 10),
               Text(
                 'Daftar sebagai Designer',
@@ -107,9 +107,9 @@ class _ProfileTabState extends State<ProfileTab> {
                       width: 22,
                       height: 22,
                       decoration: BoxDecoration(
-                        color: agreed ? Colors.purple : Colors.transparent,
+                        color: agreed ? const Color(0xFF0288D1) : Colors.transparent,
                         border: Border.all(
-                          color: agreed ? Colors.purple : Colors.white54,
+                          color: agreed ? const Color(0xFF0288D1) : Colors.white54,
                           width: 2,
                         ),
                         borderRadius: BorderRadius.circular(5),
@@ -150,7 +150,7 @@ class _ProfileTabState extends State<ProfileTab> {
                     }
                   : null,
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.purple,
+                backgroundColor: const Color(0xFF0288D1),
                 disabledBackgroundColor: Colors.white12,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
@@ -185,7 +185,7 @@ class _ProfileTabState extends State<ProfileTab> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Selamat! Akun kamu sekarang menjadi Designer 🎨'),
-              backgroundColor: Colors.purple,
+              backgroundColor: const Color(0xFF0288D1),
               duration: Duration(seconds: 3),
             ),
           );
@@ -218,7 +218,7 @@ class _ProfileTabState extends State<ProfileTab> {
     final isAdmin = role == 'admin';
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0F0C29),
+      backgroundColor: const Color(0xFF0A1628),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
@@ -248,7 +248,7 @@ class _ProfileTabState extends State<ProfileTab> {
                       child: Container(
                         padding: const EdgeInsets.all(6),
                         decoration: BoxDecoration(
-                          color: Colors.purple,
+                          color: const Color(0xFF0288D1),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: const Icon(
@@ -289,19 +289,19 @@ class _ProfileTabState extends State<ProfileTab> {
                     ),
                     decoration: BoxDecoration(
                       border: Border.all(
-                        color: Colors.purpleAccent.withValues(alpha: 0.5),
+                        color: Colors.lightBlueAccent.withValues(alpha: 0.5),
                       ),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: const [
-                        Icon(Icons.brush, color: Colors.purpleAccent, size: 16),
+                        Icon(Icons.brush, color: Colors.lightBlueAccent, size: 16),
                         SizedBox(width: 8),
                         Text(
                           'Daftar sebagai Designer?',
                           style: TextStyle(
-                            color: Colors.purpleAccent,
+                            color: Colors.lightBlueAccent,
                             fontSize: 13,
                           ),
                         ),
@@ -380,7 +380,7 @@ class _ProfileTabState extends State<ProfileTab> {
     String label;
     switch (r) {
       case 'designer':
-        color = Colors.purpleAccent;
+        color = Colors.lightBlueAccent;
         icon = Icons.brush;
         label = 'Designer';
         break;

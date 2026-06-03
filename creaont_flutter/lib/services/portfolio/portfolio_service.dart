@@ -174,7 +174,7 @@ class PortfolioService {
     PlatformFile? rawFile,
   }) async {
     try {
-      final fields = <String, dynamic>{'_method': 'PUT'};
+      final fields = <String, dynamic>{};
       if (title != null) fields['title'] = title;
       if (description != null) fields['description'] = description;
       if (category != null) fields['category'] = category;

@@ -6,7 +6,7 @@ class HistoryTransactionScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0F0C29),
+      backgroundColor: const Color(0xFF0A1628),
 
       appBar: AppBar(title: const Text("Transaction History")),
 
@@ -15,7 +15,7 @@ class HistoryTransactionScreen extends StatelessWidget {
 
         children: const [
           Card(
-            color: Color(0xFF1E1B3A),
+            color: Color(0xFF0D1F3C),
 
             child: ListTile(
               title: Text("Logo Design", style: TextStyle(color: Colors.white)),
@@ -33,7 +33,7 @@ class HistoryTransactionScreen extends StatelessWidget {
           SizedBox(height: 10),
 
           Card(
-            color: Color(0xFF1E1B3A),
+            color: Color(0xFF0D1F3C),
 
             child: ListTile(
               title: Text("UI Design", style: TextStyle(color: Colors.white)),

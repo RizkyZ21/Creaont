@@ -96,7 +96,7 @@ class _LoginScreenState extends State<LoginScreen> {
               )
             : null,
         filled: true,
-        fillColor: const Color(0xFF1E1B3A),
+        fillColor: const Color(0xFF0D1F3C),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
           borderSide: BorderSide.none,
@@ -124,7 +124,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       horizontal: 20,
                     ),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF9D71FD),
+                      color: const Color(0xFF29B6F6),
                       borderRadius: BorderRadius.circular(28),
                     ),
                     child: Column(
@@ -190,7 +190,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           child: ElevatedButton(
                             onPressed: isLoading ? null : loginUser,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF9D71FD),
+                              backgroundColor: const Color(0xFF29B6F6),
                               padding: const EdgeInsets.symmetric(vertical: 16),
                             ),
                             child: isLoading
@@ -211,7 +211,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           },
                           child: const Text(
                             "Don't have an account? Sign Up",
-                            style: TextStyle(color: Color(0xFF9D71FD)),
+                            style: TextStyle(color: Color(0xFF29B6F6)),
                           ),
                         ),
                       ],

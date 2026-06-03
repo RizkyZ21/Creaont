@@ -82,7 +82,7 @@ class RegisterScreenState extends State<RegisterScreen> {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
-        color: const Color(0xFF1E1B3A),
+        color: const Color(0xFF0D1F3C),
       ),
       child: TextField(
         controller: controller,
@@ -136,7 +136,7 @@ class RegisterScreenState extends State<RegisterScreen> {
                           horizontal: 20,
                         ),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF9D71FD),
+                          color: const Color(0xFF29B6F6),
                           borderRadius: BorderRadius.circular(28),
                         ),
                         child: Column(
@@ -224,11 +224,11 @@ class RegisterScreenState extends State<RegisterScreen> {
                             Container(
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(16),
-                                color: const Color(0xFF1E1B3A),
+                                color: const Color(0xFF0D1F3C),
                               ),
                               child: DropdownButtonFormField<String>(
                                 value: selectedRole,
-                                dropdownColor: const Color(0xFF1E1B3A),
+                                dropdownColor: const Color(0xFF0D1F3C),
                                 style: const TextStyle(color: Colors.white),
                                 decoration: const InputDecoration(
                                   prefixIcon: Icon(
@@ -265,7 +265,7 @@ class RegisterScreenState extends State<RegisterScreen> {
                               child: ElevatedButton(
                                 onPressed: isLoading ? null : registerUser,
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF9D71FD),
+                                  backgroundColor: const Color(0xFF29B6F6),
                                   padding: const EdgeInsets.symmetric(
                                     vertical: 16,
                                   ),
@@ -306,7 +306,7 @@ class RegisterScreenState extends State<RegisterScreen> {
                                   child: const Text(
                                     "Sign In",
                                     style: TextStyle(
-                                      color: Color(0xFF9D71FD),
+                                      color: Color(0xFF29B6F6),
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),

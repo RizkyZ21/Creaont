@@ -209,10 +209,17 @@ class OrderController extends Controller
         $user = $request->user();
         $order = Orders::with('latestDesignFile')->findOrFail($id);
 
-        if ($user->role !== 'admin'
-            && $order->customer_id !== $user->id
-            && $order->designer_id !== $user->id) {
+        // Hanya customer yang memesan atau admin yang boleh download
+        if ($user->role !== 'admin' && $order->customer_id !== $user->id) {
             return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        // Order harus sudah selesai
+        if ($order->status !== 'completed') {
+            return response()->json([
+                'success' => false,
+                'message' => 'File hanya bisa didownload setelah order selesai.',
+            ], 422);
         }
 
         $file = $order->latestDesignFile;

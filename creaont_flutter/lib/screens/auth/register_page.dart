@@ -25,7 +25,7 @@ class _RegisterPageState extends State<RegisterPage> {
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xFF0F0C29), Color(0xFF302B63), Color(0xFF24243E)],
+            colors: [Color(0xFF0A1628), Color(0xFF0D2137), Color(0xFF0A3D5C)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -41,7 +41,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   height: 80,
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
-                      colors: [Color(0xFF7F00FF), Color(0xFFE100FF)],
+                      colors: [Color(0xFF0288D1), Color(0xFF29B6F6)],
                     ),
                     borderRadius: BorderRadius.circular(20),
                   ),
@@ -128,7 +128,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         child: DropdownButton<String>(
                           value: selectedRole,
                           isExpanded: true,
-                          dropdownColor: const Color(0xFF1E1B3A),
+                          dropdownColor: const Color(0xFF0D1F3C),
                           underline: const SizedBox(),
                           style: const TextStyle(color: Colors.white),
                           items: const [
@@ -186,7 +186,7 @@ class _RegisterPageState extends State<RegisterPage> {
                               width: double.infinity,
                               child: ElevatedButton(
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.purpleAccent,
+                                  backgroundColor: Colors.lightBlueAccent,
                                   padding: const EdgeInsets.symmetric(
                                     vertical: 14,
                                   ),
@@ -251,7 +251,7 @@ class _RegisterPageState extends State<RegisterPage> {
                             },
                             child: const Text(
                               "Sign In",
-                              style: TextStyle(color: Colors.purpleAccent),
+                              style: TextStyle(color: Colors.lightBlueAccent),
                             ),
                           ),
                         ],

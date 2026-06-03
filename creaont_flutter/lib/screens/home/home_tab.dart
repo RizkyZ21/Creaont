@@ -90,7 +90,7 @@ class _HomeTabState extends State<HomeTab> {
     return Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
-          colors: [Color(0xFF0F0C29), Color(0xFF302B63), Color(0xFF24243E)],
+          colors: [Color(0xFF0A1628), Color(0xFF0D2137), Color(0xFF0A3D5C)],
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
         ),
@@ -98,7 +98,7 @@ class _HomeTabState extends State<HomeTab> {
       child: SafeArea(
         child: RefreshIndicator(
           onRefresh: _loadPopular,
-          color: Colors.purpleAccent,
+          color: Colors.lightBlueAccent,
           child: CustomScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             slivers: [
@@ -129,7 +129,7 @@ class _HomeTabState extends State<HomeTab> {
                           child: const Text(
                             'Reset',
                             style: TextStyle(
-                              color: Colors.purpleAccent,
+                              color: Colors.lightBlueAccent,
                               fontSize: 13,
                             ),
                           ),
@@ -174,7 +174,7 @@ class _HomeTabState extends State<HomeTab> {
                     padding: EdgeInsets.all(40),
                     child: Center(
                       child: CircularProgressIndicator(
-                        color: Colors.purpleAccent,
+                        color: Colors.lightBlueAccent,
                       ),
                     ),
                   ),
@@ -258,9 +258,8 @@ class _HomeTabState extends State<HomeTab> {
             height: 44,
             decoration: const BoxDecoration(
               gradient: LinearGradient(
-                colors: [Color(0xFF7F00FF), Color(0xFFE100FF)],
+                colors: [Color(0xFF0288D1), Color(0xFF29B6F6)],
               ),
-              shape: BoxShape.circle,
             ),
             child: const Icon(Icons.person, color: Colors.white),
           ),
@@ -304,7 +303,7 @@ class _HomeTabState extends State<HomeTab> {
         decoration: BoxDecoration(
           color: Colors.white10,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: Colors.purple.withValues(alpha: 0.3)),
+          border: Border.all(color: const Color(0xFF0288D1).withValues(alpha: 0.3)),
         ),
         child: Row(
           children: const [
@@ -340,7 +339,7 @@ class _HomeTabState extends State<HomeTab> {
               decoration: BoxDecoration(
                 gradient: active
                     ? const LinearGradient(
-                        colors: [Color(0xFF7F00FF), Color(0xFFE100FF)],
+                        colors: [Color(0xFF0288D1), Color(0xFF29B6F6)],
                       )
                     : null,
                 color: active ? null : Colors.white10,
@@ -429,7 +428,7 @@ class _PopularCard extends StatelessWidget {
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: const Color(0xFF1E1B3A),
+          color: const Color(0xFF0D1F3C),
           borderRadius: BorderRadius.circular(18),
           border: rank <= 3
               ? Border.all(
@@ -521,7 +520,7 @@ class _PopularCard extends StatelessWidget {
                       Text(
                         'Rp $priceStr',
                         style: const TextStyle(
-                          color: Colors.purpleAccent,
+                          color: Colors.lightBlueAccent,
                           fontSize: 13,
                           fontWeight: FontWeight.bold,
                         ),
@@ -573,7 +572,7 @@ class _PopularCard extends StatelessWidget {
     height: 58,
     decoration: BoxDecoration(
       gradient: const LinearGradient(
-        colors: [Color(0xFF7F00FF), Color(0xFFE100FF)],
+        colors: [Color(0xFF0288D1), Color(0xFF29B6F6)],
       ),
       borderRadius: BorderRadius.circular(12),
     ),

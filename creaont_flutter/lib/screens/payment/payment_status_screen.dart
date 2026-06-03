@@ -42,7 +42,7 @@ class PaymentStatusScreen extends StatelessWidget {
             : 'Menunggu Pembayaran';
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0F0C29),
+      backgroundColor: const Color(0xFF0A1628),
       body: SafeArea(
         child: Center(
           child: Padding(
@@ -124,7 +124,7 @@ class PaymentStatusScreen extends StatelessWidget {
                         ),
                       ),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.purple,
+                        backgroundColor: const Color(0xFF0288D1),
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14)),

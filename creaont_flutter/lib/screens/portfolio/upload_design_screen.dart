@@ -223,13 +223,13 @@ class _UploadDesignScreenState extends State<UploadDesignScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0F0C29),
+      backgroundColor: const Color(0xFF0A1628),
       appBar: AppBar(
         title: const Text(
           'Upload Portfolio',
           style: TextStyle(color: Colors.white),
         ),
-        backgroundColor: const Color(0xFF0F0C29),
+        backgroundColor: const Color(0xFF0A1628),
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
       ),
@@ -279,7 +279,7 @@ class _UploadDesignScreenState extends State<UploadDesignScreen> {
                   border: Border.all(
                     color: _imageBytes != null
                         ? Colors.green.withValues(alpha: 0.6)
-                        : Colors.purple.withValues(alpha: 0.5),
+                        : const Color(0xFF0288D1).withValues(alpha: 0.5),
                   ),
                 ),
                 child: _imageBytes == null
@@ -288,7 +288,7 @@ class _UploadDesignScreenState extends State<UploadDesignScreen> {
                         children: const [
                           Icon(
                             Icons.add_photo_alternate,
-                            color: Colors.purple,
+                            color: const Color(0xFF0288D1),
                             size: 48,
                           ),
                           SizedBox(height: 8),
@@ -375,120 +375,96 @@ class _UploadDesignScreenState extends State<UploadDesignScreen> {
             ),
             const SizedBox(height: 20),
 
-            // ── File Raw (wajib) ───────────────────────────────────
-            _sectionLabel(
-              'File Desain Asli (Raw)',
-              required: _type == 'design',
-            ),
-            const SizedBox(height: 4),
-            Text(
-              _type == 'design'
-                  ? 'File ini hanya bisa didownload oleh pembeli. (.cdr .psd .ai .fig .pdf .zip dll)'
-                  : 'Opsional untuk jasa. Bisa dikosongkan kalau layanan dikerjakan setelah order.',
-              style: TextStyle(color: Colors.white38, fontSize: 12),
-            ),
-            const SizedBox(height: 10),
-            GestureDetector(
-              onTap: _pickRawFile,
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white10,
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(
-                    color: _rawFile != null
-                        ? Colors.green.withValues(alpha: 0.6)
-                        : Colors.orange.withValues(alpha: 0.5),
-                  ),
-                ),
-                child: _rawFile == null
-                    ? Row(
-                        children: const [
-                          Icon(
-                            Icons.upload_file,
-                            color: Colors.orange,
-                            size: 32,
-                          ),
-                          SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Upload File Raw',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                SizedBox(height: 2),
-                                Text(
-                                  'Tap untuk pilih file desain asli',
-                                  style: TextStyle(
-                                    color: Colors.white54,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Icon(Icons.chevron_right, color: Colors.white38),
-                        ],
-                      )
-                    : Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: Colors.green.withValues(alpha: 0.2),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: const Icon(
-                              Icons.insert_drive_file,
-                              color: Colors.green,
-                              size: 28,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  _rawFile!.name,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  _formatSize(_rawFile!.size),
-                                  style: const TextStyle(
-                                    color: Colors.white54,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          GestureDetector(
-                            onTap: () => setState(() => _rawFile = null),
-                            child: const Icon(
-                              Icons.close,
-                              color: Colors.white38,
-                              size: 20,
-                            ),
-                          ),
-                        ],
-                      ),
+            // ── File Raw (hanya untuk type=design) ────────────────
+            if (_type == 'design') ...[
+              _sectionLabel('File Desain Asli (Raw)', required: true),
+              const SizedBox(height: 4),
+              const Text(
+                'File ini hanya bisa didownload oleh pembeli. (.cdr .psd .ai .fig .pdf .zip dll)',
+                style: TextStyle(color: Colors.white38, fontSize: 12),
               ),
-            ),
-            const SizedBox(height: 20),
+              const SizedBox(height: 10),
+              GestureDetector(
+                onTap: _pickRawFile,
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white10,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: _rawFile != null
+                          ? Colors.green.withValues(alpha: 0.6)
+                          : Colors.orange.withValues(alpha: 0.5),
+                    ),
+                  ),
+                  child: _rawFile == null
+                      ? Row(
+                          children: const [
+                            Icon(Icons.upload_file, color: Colors.orange, size: 32),
+                            SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Upload File Raw',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  SizedBox(height: 2),
+                                  Text(
+                                    'Tap untuk pilih file desain asli',
+                                    style: TextStyle(color: Colors.white54, fontSize: 12),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Icon(Icons.chevron_right, color: Colors.white38),
+                          ],
+                        )
+                      : Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: Colors.green.withValues(alpha: 0.2),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: const Icon(Icons.insert_drive_file, color: Colors.green, size: 28),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    _rawFile!.name,
+                                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    _formatSize(_rawFile!.size),
+                                    style: const TextStyle(color: Colors.white54, fontSize: 12),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            GestureDetector(
+                              onTap: () => setState(() => _rawFile = null),
+                              child: const Icon(Icons.close, color: Colors.white38, size: 20),
+                            ),
+                          ],
+                        ),
+                ),
+              ),
+              const SizedBox(height: 20),
+            ],
 
-            // ── Info box ───────────────────────────────────────────
+            // ── Info box (service: progress dikirim via order) ─────
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
@@ -496,15 +472,17 @@ class _UploadDesignScreenState extends State<UploadDesignScreen> {
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
               ),
-              child: const Row(
+              child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(Icons.info_outline, color: Colors.blue, size: 16),
-                  SizedBox(width: 8),
+                  const Icon(Icons.info_outline, color: Colors.blue, size: 16),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'Thumbnail dan deskripsi tampil ke publik. File raw hanya bisa didownload oleh pembeli desain jadi.',
-                      style: TextStyle(color: Colors.blue, fontSize: 12),
+                      _type == 'design'
+                          ? 'Thumbnail & deskripsi tampil ke publik. File raw hanya bisa didownload oleh pembeli desain jadi.'
+                          : 'Untuk sewa jasa, hasil kerja dikirim lewat progres order. Tidak perlu upload file raw di sini.',
+                      style: const TextStyle(color: Colors.blue, fontSize: 12),
                     ),
                   ),
                 ],
@@ -537,7 +515,7 @@ class _UploadDesignScreenState extends State<UploadDesignScreen> {
               child: DropdownButton<String>(
                 value: _category,
                 isExpanded: true,
-                dropdownColor: const Color(0xFF1E1B3A),
+                dropdownColor: const Color(0xFF0D1F3C),
                 style: const TextStyle(color: Colors.white),
                 underline: const SizedBox(),
                 items: categories
@@ -564,8 +542,8 @@ class _UploadDesignScreenState extends State<UploadDesignScreen> {
               child: ElevatedButton(
                 onPressed: _loading ? null : _submit,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.purple,
-                  disabledBackgroundColor: Colors.purple.withValues(alpha: 0.4),
+                  backgroundColor: const Color(0xFF0288D1),
+                  disabledBackgroundColor: const Color(0xFF0288D1).withValues(alpha: 0.4),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),
                   ),
@@ -630,11 +608,11 @@ class _UploadDesignScreenState extends State<UploadDesignScreen> {
         padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 10),
         decoration: BoxDecoration(
           color: active
-              ? Colors.purple.withValues(alpha: 0.25)
+              ? const Color(0xFF0288D1).withValues(alpha: 0.25)
               : Colors.white10,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: active ? Colors.purpleAccent : Colors.white12,
+            color: active ? Colors.lightBlueAccent : Colors.white12,
           ),
         ),
         child: Row(
@@ -642,7 +620,7 @@ class _UploadDesignScreenState extends State<UploadDesignScreen> {
           children: [
             Icon(
               icon,
-              color: active ? Colors.purpleAccent : Colors.white54,
+              color: active ? Colors.lightBlueAccent : Colors.white54,
               size: 18,
             ),
             const SizedBox(width: 8),

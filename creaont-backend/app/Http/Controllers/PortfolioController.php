@@ -3,30 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Models\Portfolio;
-use App\Models\Category;
+use App\Models\Review;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 class PortfolioController extends Controller
 {
-    public function categories()
-    {
-        $categories = Category::where('is_active', true)
-            ->orderBy('name')
-            ->get(['id', 'name', 'description']);
-
-        return response()->json(['success' => true, 'data' => $categories]);
-    }
-
-    // ── Public: semua portfolio ───────────────────────────────────────
     public function index(Request $request)
     {
-        $type = $request->input('type', 'design');
-        if ($type === 'product') {
-            $type = 'design';
-        }
-
-        $query = Portfolio::with('user:id,name,avatar')->where('type', $type);
+        $query = Portfolio::with('user:id,name')->where('type', 'design');
 
         if ($request->filled('category') && $request->category !== 'All') {
             $query->where('category', $request->category);
@@ -38,17 +23,12 @@ class PortfolioController extends Controller
         return response()->json(['success' => true, 'data' => $query->latest()->get()]);
     }
 
-    // ── Public: portfolio populer ─────────────────────────────────────
     public function popular(Request $request)
     {
-        $type = $request->input('type', 'design');
-        if ($type === 'product') {
-            $type = 'design';
-        }
-
-        $query = Portfolio::with('user:id,name,avatar')
-            ->where('type', $type)
+        $query = Portfolio::with('user:id,name')
+            ->where('type', 'design')
             ->withCount('orders')
+            ->withAvg('reviews', 'rating')
             ->orderByDesc('orders_count')
             ->orderByDesc('created_at');
 
@@ -56,23 +36,18 @@ class PortfolioController extends Controller
             $query->where('category', $request->category);
         }
 
-        $portfolios = $query->limit((int) $request->input('limit', 10))->get();
-
-        return response()->json(['success' => true, 'data' => $portfolios]);
+        return response()->json([
+            'success' => true,
+            'data'    => $query->limit((int) $request->input('limit', 10))->get(),
+        ]);
     }
 
-    // ── Public: portfolio milik satu designer ─────────────────────────
     public function byDesigner($designerId)
     {
-        $type = $request->input('type', 'design');
-        if ($type === 'product') {
-            $type = 'design';
-        }
-
-        $portfolios = Portfolio::with('user:id,name,avatar')
+        $portfolios = Portfolio::with('user:id,name')
             ->where('user_id', $designerId)
-            ->where('type', $type)
             ->withCount('orders')
+            ->withAvg('reviews', 'rating')
             ->orderByDesc('orders_count')
             ->latest()
             ->get();
@@ -80,7 +55,30 @@ class PortfolioController extends Controller
         return response()->json(['success' => true, 'data' => $portfolios]);
     }
 
-    // ── Designer: buat portfolio (wajib image + raw_file) ────────────
+    // ── Listing jasa saja (type = service) ───────────────────────────
+    public function services(Request $request)
+    {
+        $query = Portfolio::with('user:id,name')
+            ->where('type', 'service')
+            ->withAvg('reviews', 'rating');
+
+        if ($request->filled('category') && $request->category !== 'All') {
+            $query->where('category', $request->category);
+        }
+        if ($request->filled('search')) {
+            $query->where('title', 'like', '%' . $request->search . '%');
+        }
+
+        return response()->json(['success' => true, 'data' => $query->latest()->get()]);
+    }
+
+    public function categories(Request $request)
+    {
+        $cats = Portfolio::distinct()->pluck('category')->filter()->values();
+        return response()->json(['success' => true, 'data' => $cats]);
+    }
+
+    // ── Designer: buat portfolio ──────────────────────────────────────
     public function store(Request $request)
     {
         $user = $request->user();
@@ -93,36 +91,31 @@ class PortfolioController extends Controller
             'title'       => 'required|string|max:255',
             'description' => 'required|string',
             'category'    => 'required|string|max:100',
-            'type'        => 'sometimes|in:design,service,product',
+            'type'        => 'sometimes|in:design,service',
             'price'       => 'required|numeric|min:0',
             'image'       => 'required|file|max:4096',
-            'raw_file'    => 'sometimes|file|max:102400',
+            'raw_file'    => 'sometimes|nullable|file|max:102400',
         ]);
 
         $type = $request->input('type', 'design');
-        if ($type === 'product') {
-            $type = 'design';
-        }
+
+        // Validasi image bytes (aman untuk web — tidak pakai getRealPath)
+        $imageError = $this->validateImageBytes($request->file('image'));
+        if ($imageError) return $imageError;
+
+        // Raw file wajib hanya untuk type=design; type=service tidak butuh raw file
         if ($type === 'design' && !$request->hasFile('raw_file')) {
             return response()->json([
                 'success' => false,
-                'message' => 'File desain asli wajib diunggah untuk desain jadi',
+                'message' => 'File desain asli wajib diunggah untuk karya jadi',
             ], 422);
         }
 
-        $imageError = $this->validateImageFile($request->file('image'));
-        if ($imageError) {
-            return $imageError;
-        }
-
-        // Simpan thumbnail
         $imagePath = $request->file('image')->store('portfolios/thumbnails', 'public');
 
-        // Simpan file raw — taruh di disk 'local' (tidak accessible publik)
-        $rawPath = null;
-        $rawFileName = null;
-        $rawFileType = null;
-        if ($request->hasFile('raw_file')) {
+        // Hanya simpan raw_file jika type=design
+        $rawPath = $rawFileName = $rawFileType = null;
+        if ($type === 'design' && $request->hasFile('raw_file')) {
             $rawFile     = $request->file('raw_file');
             $rawPath     = $rawFile->store('portfolios/raw', 'local');
             $rawFileName = $rawFile->getClientOriginalName();
@@ -149,7 +142,6 @@ class PortfolioController extends Controller
         ], 201);
     }
 
-    // ── Designer: update portfolio ────────────────────────────────────
     public function update(Request $request, $id)
     {
         $user      = $request->user();
@@ -163,18 +155,15 @@ class PortfolioController extends Controller
             'title'       => 'sometimes|string|max:255',
             'description' => 'sometimes|string',
             'category'    => 'sometimes|string|max:100',
-            'type'        => 'sometimes|in:design,service,product',
+            'type'        => 'sometimes|in:design,service',
             'price'       => 'sometimes|numeric|min:0',
             'image'       => 'sometimes|file|max:4096',
-            'raw_file'    => 'sometimes|file|max:102400',
+            'raw_file'    => 'sometimes|nullable|file|max:102400',
         ]);
 
         if ($request->hasFile('image')) {
-            $imageError = $this->validateImageFile($request->file('image'));
-            if ($imageError) {
-                return $imageError;
-            }
-
+            $imageError = $this->validateImageBytes($request->file('image'));
+            if ($imageError) return $imageError;
             if ($portfolio->image) Storage::disk('public')->delete($portfolio->image);
             $portfolio->image = $request->file('image')->store('portfolios/thumbnails', 'public');
         }
@@ -187,11 +176,7 @@ class PortfolioController extends Controller
             $portfolio->raw_file_type = strtolower($rawFile->getClientOriginalExtension());
         }
 
-        $data = $request->only('title', 'description', 'category', 'type', 'price');
-        if (($data['type'] ?? null) === 'product') {
-            $data['type'] = 'design';
-        }
-        $portfolio->fill($data);
+        $portfolio->fill($request->only('title', 'description', 'category', 'type', 'price'));
         $portfolio->save();
 
         return response()->json([
@@ -201,7 +186,6 @@ class PortfolioController extends Controller
         ]);
     }
 
-    // ── Designer: hapus portfolio ─────────────────────────────────────
     public function destroy(Request $request, $id)
     {
         $user      = $request->user();
@@ -211,21 +195,6 @@ class PortfolioController extends Controller
             return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
         }
 
-        // Cegah hapus jika masih ada order aktif (pending / in_progress)
-        $activeOrders = $portfolio->orders()
-            ->whereIn('status', ['pending', 'in_progress'])
-            ->exists();
-
-        if ($activeOrders) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Portfolio tidak dapat dihapus karena masih ada order yang sedang berjalan.',
-            ], 422);
-        }
-
-        // Putus relasi pada order yang sudah selesai/dibatalkan agar FK tidak melanggar
-        $portfolio->orders()->update(['portfolio_id' => null]);
-
         if ($portfolio->image)    Storage::disk('public')->delete($portfolio->image);
         if ($portfolio->raw_file) Storage::disk('local')->delete($portfolio->raw_file);
         $portfolio->delete();
@@ -233,11 +202,11 @@ class PortfolioController extends Controller
         return response()->json(['success' => true, 'message' => 'Portfolio dihapus']);
     }
 
-    // ── Designer: portfolio milik sendiri ─────────────────────────────
     public function myPortfolios(Request $request)
     {
         $portfolios = Portfolio::where('user_id', $request->user()->id)
             ->withCount('orders')
+            ->withAvg('reviews', 'rating')
             ->orderByDesc('orders_count')
             ->latest()
             ->get();
@@ -245,30 +214,6 @@ class PortfolioController extends Controller
         return response()->json(['success' => true, 'data' => $portfolios]);
     }
 
-    public function services(Request $request)
-    {
-        $query = Portfolio::with('user:id,name,avatar')
-            ->where('type', 'service')
-            ->withCount('orders')
-            ->orderByDesc('orders_count')
-            ->latest();
-
-        if ($request->filled('category') && $request->category !== 'All') {
-            $query->where('category', $request->category);
-        }
-        if ($request->filled('search')) {
-            $search = '%' . $request->search . '%';
-            $query->where(function ($q) use ($search) {
-                $q->where('title', 'like', $search)
-                    ->orWhere('description', 'like', $search)
-                    ->orWhereHas('user', fn ($u) => $u->where('name', 'like', $search));
-            });
-        }
-
-        return response()->json(['success' => true, 'data' => $query->get()]);
-    }
-
-    // ── Download file raw — hanya jika sudah beli / designer sendiri ──
     public function download(Request $request, $id)
     {
         $user      = $request->user();
@@ -278,18 +223,8 @@ class PortfolioController extends Controller
         $isAdmin   = $user->role === 'admin';
         $hasBought = $portfolio->isBoughtBy($user->id);
 
-        if (!in_array($portfolio->type, ['design', 'product'], true)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Portfolio jasa tidak memiliki file desain untuk didownload',
-            ], 422);
-        }
-
         if (!$isOwner && !$isAdmin && !$hasBought) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Anda belum membeli produk ini',
-            ], 403);
+            return response()->json(['success' => false, 'message' => 'Anda belum membeli produk ini'], 403);
         }
 
         if (!$portfolio->raw_file || !Storage::disk('local')->exists($portfolio->raw_file)) {
@@ -302,7 +237,9 @@ class PortfolioController extends Controller
         );
     }
 
-    private function validateImageFile($image)
+    // ── Validasi image dari bytes — aman untuk web ────────────────────
+    // (tidak pakai getRealPath() yang bisa false di upload web)
+    private function validateImageBytes($image)
     {
         if (!$image || !$image->isValid()) {
             return response()->json([
@@ -311,10 +248,20 @@ class PortfolioController extends Controller
             ], 422);
         }
 
-        $imgBytes = file_get_contents($image->getRealPath(), false, null, 0, 12);
-        $isPng  = substr($imgBytes, 0, 4) === "\x89PNG";
-        $isJpeg = substr($imgBytes, 0, 3) === "\xFF\xD8\xFF";
-        $isWebp = substr($imgBytes, 0, 4) === 'RIFF' && substr($imgBytes, 8, 4) === 'WEBP';
+        // Baca 12 byte pertama untuk cek magic bytes
+        $handle = fopen($image->getRealPath() ?: $image->path(), 'rb');
+        if (!$handle) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Tidak dapat membaca file gambar.',
+            ], 422);
+        }
+        $header = fread($handle, 12);
+        fclose($handle);
+
+        $isPng  = substr($header, 0, 4) === "\x89PNG";
+        $isJpeg = substr($header, 0, 3) === "\xFF\xD8\xFF";
+        $isWebp = substr($header, 0, 4) === 'RIFF' && substr($header, 8, 4) === 'WEBP';
 
         if (!$isPng && !$isJpeg && !$isWebp) {
             return response()->json([

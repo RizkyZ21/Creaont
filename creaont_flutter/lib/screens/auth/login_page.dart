@@ -24,7 +24,7 @@ class _LoginPageState extends State<LoginPage> {
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xFF0F0C29), Color(0xFF302B63), Color(0xFF24243E)],
+            colors: [Color(0xFF0A1628), Color(0xFF0D2137), Color(0xFF0A3D5C)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -40,7 +40,7 @@ class _LoginPageState extends State<LoginPage> {
                   height: 80,
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
-                      colors: [Color(0xFF7F00FF), Color(0xFFE100FF)],
+                      colors: [Color(0xFF0288D1), Color(0xFF29B6F6)],
                     ),
                     borderRadius: BorderRadius.circular(20),
                   ),
@@ -163,7 +163,7 @@ class _LoginPageState extends State<LoginPage> {
                         child: Text(
                           "Forgot Password?",
                           style: TextStyle(
-                            color: Colors.purpleAccent,
+                            color: Colors.lightBlueAccent,
                             fontSize: 12,
                           ),
                         ),
@@ -184,7 +184,7 @@ class _LoginPageState extends State<LoginPage> {
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(12),
                                   ),
-                                  backgroundColor: Colors.purpleAccent,
+                                  backgroundColor: Colors.lightBlueAccent,
                                 ),
                                 onPressed: () {
                                   auth.login(
@@ -221,7 +221,7 @@ class _LoginPageState extends State<LoginPage> {
                             },
                             child: const Text(
                               "Sign Up",
-                              style: TextStyle(color: Colors.purpleAccent),
+                              style: TextStyle(color: Colors.lightBlueAccent),
                             ),
                           ),
                         ],

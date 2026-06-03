@@ -71,9 +71,9 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0F0C29),
+      backgroundColor: const Color(0xFF0A1628),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF0F0C29),
+        backgroundColor: const Color(0xFF0A1628),
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
         title: const Text('Pembayaran', style: TextStyle(color: Colors.white)),
@@ -111,7 +111,7 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
                               const Text('Total Bayar',
                                   style: TextStyle(color: Colors.white70)),
                               Text(widget.price,
-                                  style: const TextStyle(color: Colors.purpleAccent,
+                                  style: const TextStyle(color: Colors.lightBlueAccent,
                                       fontWeight: FontWeight.bold, fontSize: 18)),
                             ]),
                         if (widget.orderId != null) ...[
@@ -142,11 +142,11 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
                         padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(
                           color: active
-                              ? Colors.purple.withValues(alpha: 0.2)
+                              ? const Color(0xFF0288D1).withValues(alpha: 0.2)
                               : Colors.white10,
                           borderRadius: BorderRadius.circular(14),
                           border: Border.all(
-                            color: active ? Colors.purpleAccent : Colors.transparent,
+                            color: active ? Colors.lightBlueAccent : Colors.transparent,
                             width: 1.5,
                           ),
                         ),
@@ -155,12 +155,12 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
                               color: active
-                                  ? Colors.purple.withValues(alpha: 0.3)
+                                  ? const Color(0xFF0288D1).withValues(alpha: 0.3)
                                   : Colors.white10,
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: Icon(icon,
-                                color: active ? Colors.purpleAccent : Colors.white54,
+                                color: active ? Colors.lightBlueAccent : Colors.white54,
                                 size: 22),
                           ),
                           const SizedBox(width: 14),
@@ -176,7 +176,7 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
                           )),
                           if (active)
                             const Icon(Icons.check_circle,
-                                color: Colors.purpleAccent, size: 20),
+                                color: Colors.lightBlueAccent, size: 20),
                         ]),
                       ),
                     );
@@ -195,8 +195,8 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
               child: ElevatedButton(
                 onPressed: _isLoading ? null : _pay,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.purple,
-                  disabledBackgroundColor: Colors.purple.withValues(alpha: 0.4),
+                  backgroundColor: const Color(0xFF0288D1),
+                  disabledBackgroundColor: const Color(0xFF0288D1).withValues(alpha: 0.4),
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14)),
                 ),

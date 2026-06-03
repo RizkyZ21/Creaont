@@ -7,7 +7,7 @@ class CustomerDashboardScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E1B3A),
+        color: const Color(0xFF0D1F3C),
         borderRadius: BorderRadius.circular(18),
       ),
       child: Row(
@@ -43,7 +43,7 @@ class CustomerDashboardScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E1B3A),
+        color: const Color(0xFF0D1F3C),
         borderRadius: BorderRadius.circular(18),
       ),
       child: Column(
@@ -79,7 +79,7 @@ class CustomerDashboardScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFF0E0C1B),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1E1B3A),
+        backgroundColor: const Color(0xFF0D1F3C),
         title: const Text('Home'),
       ),
       body: Padding(
@@ -107,7 +107,7 @@ class CustomerDashboardScreen extends StatelessWidget {
         ),
       ),
       bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: const Color(0xFF1E1B3A),
+        backgroundColor: const Color(0xFF0D1F3C),
         selectedItemColor: Colors.white,
         unselectedItemColor: const Color(0xFF6A7282),
         currentIndex: 0,

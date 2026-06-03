@@ -54,7 +54,7 @@ class _OrdersTabState extends State<OrdersTab> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0F0C29),
+      backgroundColor: const Color(0xFF0A1628),
       body: SafeArea(
         child: Column(
           children: [
@@ -88,7 +88,7 @@ class _OrdersTabState extends State<OrdersTab> {
                           AnimatedContainer(
                             duration: const Duration(milliseconds: 250),
                             height: 3, width: active ? 30 : 0,
-                            decoration: BoxDecoration(color: Colors.purpleAccent, borderRadius: BorderRadius.circular(10)),
+                            decoration: BoxDecoration(color: Colors.lightBlueAccent, borderRadius: BorderRadius.circular(10)),
                           ),
                         ],
                       ),
@@ -100,7 +100,7 @@ class _OrdersTabState extends State<OrdersTab> {
             const SizedBox(height: 16),
             Expanded(
               child: isLoading
-                  ? const Center(child: CircularProgressIndicator(color: Colors.purpleAccent))
+                  ? const Center(child: CircularProgressIndicator(color: Colors.lightBlueAccent))
                   : _filtered.isEmpty
                       ? Center(child: Text('Tidak ada order ${tabs[selectedTab].toLowerCase()}',
                           style: const TextStyle(color: Colors.white54)))
@@ -128,7 +128,7 @@ class _OrdersTabState extends State<OrdersTab> {
     onTap: onTap,
     child: Container(
       padding: const EdgeInsets.all(8),
-      decoration: const BoxDecoration(color: Color(0xFF1E1B3A), shape: BoxShape.circle),
+      decoration: const BoxDecoration(color: Color(0xFF0D1F3C), shape: BoxShape.circle),
       child: Icon(icon, color: Colors.white),
     ),
   );
@@ -163,7 +163,7 @@ class _OrderCard extends StatelessWidget {
       child: Container(
         margin: const EdgeInsets.only(bottom: 14),
         padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(color: const Color(0xFF1E1B3A), borderRadius: BorderRadius.circular(20)),
+        decoration: BoxDecoration(color: const Color(0xFF0D1F3C), borderRadius: BorderRadius.circular(20)),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -192,7 +192,7 @@ class _OrderCard extends StatelessWidget {
                       child: LinearProgressIndicator(
                         value: progress / 100,
                         backgroundColor: Colors.white10,
-                        color: Colors.purpleAccent,
+                        color: Colors.lightBlueAccent,
                         minHeight: 6,
                       ),
                     ),

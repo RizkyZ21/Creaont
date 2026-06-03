@@ -18,10 +18,10 @@ class OrderScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0F0C29),
+      backgroundColor: const Color(0xFF0A1628),
 
       appBar: AppBar(
-        backgroundColor: const Color(0xFF0F0C29),
+        backgroundColor: const Color(0xFF0A1628),
         elevation: 0,
         title: const Text('Orders', style: TextStyle(color: Colors.white)),
       ),
@@ -31,7 +31,7 @@ class OrderScreen extends StatelessWidget {
 
         children: [
           Card(
-            color: const Color(0xFF1E1B3A),
+            color: const Color(0xFF0D1F3C),
 
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
@@ -62,13 +62,13 @@ class OrderScreen extends StatelessWidget {
                       ),
 
                       decoration: BoxDecoration(
-                        color: Colors.purple.withValues(alpha: 0.2),
+                        color: const Color(0xFF0288D1).withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(20),
                       ),
 
                       child: const Text(
                         'Progress',
-                        style: TextStyle(color: Colors.purpleAccent),
+                        style: TextStyle(color: Colors.lightBlueAccent),
                       ),
                     ),
                   ),

@@ -8,7 +8,7 @@ class CustomerProfileScreen extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 14),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E1B3A),
+        color: const Color(0xFF0D1F3C),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
@@ -31,7 +31,7 @@ class CustomerProfileScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFF0E0C1B),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1E1B3A),
+        backgroundColor: const Color(0xFF0D1F3C),
         title: const Text('Profile'),
       ),
       body: Padding(
@@ -40,7 +40,7 @@ class CustomerProfileScreen extends StatelessWidget {
           children: [
             const CircleAvatar(
               radius: 50,
-              backgroundColor: Color(0xFF9D71FD),
+              backgroundColor: Color(0xFF29B6F6),
               child: Icon(Icons.person, size: 50, color: Colors.white),
             ),
             const SizedBox(height: 16),
