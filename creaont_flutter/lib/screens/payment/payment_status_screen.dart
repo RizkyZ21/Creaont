@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
-import '../../services/payment/payment_service.dart';
 import '../home/home_page.dart';
+import '../order/order_detail_screen.dart';
 
-class PaymentStatusScreen extends StatefulWidget {
+class PaymentStatusScreen extends StatelessWidget {
   final String title;
   final String price;
   final String method;
   final int? orderId;
   final String token;
+  final String initialStatus; // 'paid' | 'failed' | 'pending'
 
   const PaymentStatusScreen({
     super.key,
@@ -16,57 +17,29 @@ class PaymentStatusScreen extends StatefulWidget {
     required this.method,
     this.orderId,
     this.token = '',
+    this.initialStatus = 'paid',
   });
 
   @override
-  State<PaymentStatusScreen> createState() => _PaymentStatusScreenState();
-}
-
-class _PaymentStatusScreenState extends State<PaymentStatusScreen> {
-  bool isLoading = false;
-  String paymentStatus = 'pending';
-
-  @override
-  void initState() {
-    super.initState();
-    _loadStatus();
-  }
-
-  Future<void> _loadStatus() async {
-    if (widget.orderId == null || widget.token.isEmpty) return;
-    setState(() => isLoading = true);
-    final res = await PaymentService.getStatus(
-      token: widget.token,
-      orderId: widget.orderId!,
-    );
-    if (!mounted) return;
-    setState(() {
-      isLoading = false;
-      if (res['success'] == true) {
-        paymentStatus = res['payment_status']?.toString() ?? 'pending';
-      }
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final paid = paymentStatus == 'paid';
-    final failed = paymentStatus == 'failed';
+    final paid   = initialStatus == 'paid';
+    final failed = initialStatus == 'failed';
+
     final color = paid
         ? Colors.green
         : failed
-        ? Colors.redAccent
-        : Colors.orangeAccent;
+            ? Colors.redAccent
+            : Colors.orangeAccent;
     final icon = paid
-        ? Icons.check
+        ? Icons.check_circle_rounded
         : failed
-        ? Icons.close
-        : Icons.schedule;
-    final title = paid
-        ? 'Pembayaran Berhasil'
+            ? Icons.cancel_rounded
+            : Icons.schedule_rounded;
+    final titleText = paid
+        ? 'Pembayaran Berhasil!'
         : failed
-        ? 'Pembayaran Gagal'
-        : 'Menunggu Pembayaran';
+            ? 'Pembayaran Gagal'
+            : 'Menunggu Pembayaran';
 
     return Scaffold(
       backgroundColor: const Color(0xFF0F0C29),
@@ -77,18 +50,21 @@ class _PaymentStatusScreenState extends State<PaymentStatusScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                // Icon
                 Container(
-                  width: 100,
-                  height: 100,
+                  width: 110,
+                  height: 110,
                   decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.2),
+                    color: color.withValues(alpha: 0.15),
                     shape: BoxShape.circle,
+                    border: Border.all(color: color.withValues(alpha: 0.4), width: 2),
                   ),
-                  child: Icon(icon, color: color, size: 50),
+                  child: Icon(icon, color: color, size: 58),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 28),
+
                 Text(
-                  title,
+                  titleText,
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 24,
@@ -98,12 +74,17 @@ class _PaymentStatusScreenState extends State<PaymentStatusScreen> {
                 const SizedBox(height: 8),
                 Text(
                   paid
-                      ? 'Order untuk "${widget.title}" telah dikonfirmasi.'
-                      : 'Selesaikan pembayaran di halaman gateway, lalu refresh status.',
+                      ? 'Order untuk "$title" telah dikonfirmasi\ndan siap diproses.'
+                      : failed
+                          ? 'Terjadi kesalahan saat memproses pembayaran.'
+                          : 'Pembayaran belum dikonfirmasi.',
                   textAlign: TextAlign.center,
-                  style: const TextStyle(color: Colors.white70),
+                  style: const TextStyle(color: Colors.white70, height: 1.5),
                 ),
-                const SizedBox(height: 24),
+
+                const SizedBox(height: 28),
+
+                // Summary card
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
@@ -112,60 +93,63 @@ class _PaymentStatusScreenState extends State<PaymentStatusScreen> {
                   ),
                   child: Column(
                     children: [
-                      _row('Metode', widget.method),
-                      _row('Total', widget.price),
-                      if (widget.orderId != null)
-                        _row('Order ID', '#${widget.orderId}'),
-                      _row('Status', paymentStatus.toUpperCase()),
+                      _row('Metode',  method),
+                      _row('Total',   price),
+                      if (orderId != null) _row('Order ID', '#$orderId'),
+                      _row('Status',
+                          paid ? 'LUNAS ✓' : failed ? 'GAGAL ✗' : 'PENDING'),
                     ],
                   ),
                 ),
-                const SizedBox(height: 20),
-                SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: OutlinedButton.icon(
-                    icon: isLoading
-                        ? const SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Icon(Icons.refresh),
-                    label: const Text('Refresh Status'),
-                    onPressed: isLoading ? null : _loadStatus,
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.white,
-                      side: const BorderSide(color: Colors.white24),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
+
+                const SizedBox(height: 28),
+
+                // Lihat Order button (jika paid & ada orderId)
+                if (paid && orderId != null) ...[
+                  SizedBox(
+                    width: double.infinity,
+                    height: 52,
+                    child: ElevatedButton.icon(
+                      icon: const Icon(Icons.receipt_long),
+                      label: const Text('Lihat Detail Order',
+                          style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                      onPressed: () => Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => OrderDetailScreen(
+                            orderId: orderId!,
+                            token:   token,
+                            role:    'customer',
+                          ),
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.purple,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14)),
                       ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 12),
+                  const SizedBox(height: 12),
+                ],
+
                 SizedBox(
                   width: double.infinity,
-                  height: 52,
-                  child: ElevatedButton(
+                  height: 50,
+                  child: OutlinedButton(
                     onPressed: () => Navigator.pushAndRemoveUntil(
                       context,
                       MaterialPageRoute(builder: (_) => const HomePage()),
                       (r) => false,
                     ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.purple,
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      side: const BorderSide(color: Colors.white24),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
+                          borderRadius: BorderRadius.circular(14)),
                     ),
-                    child: const Text(
-                      'Kembali ke Beranda',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                    child: const Text('Kembali ke Beranda'),
                   ),
                 ),
               ],
@@ -182,13 +166,8 @@ class _PaymentStatusScreenState extends State<PaymentStatusScreen> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(label, style: const TextStyle(color: Colors.white54)),
-        Text(
-          value,
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+        Text(value,
+            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
       ],
     ),
   );

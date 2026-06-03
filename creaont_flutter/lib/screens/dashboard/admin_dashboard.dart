@@ -284,7 +284,7 @@ class _OrderTile extends StatelessWidget {
     final customer = order['customer'] as Map<String, dynamic>?;
     final designer = order['designer'] as Map<String, dynamic>?;
     final portfolio = order['portfolio'] as Map<String, dynamic>?;
-    final imageUrl = ApiService.imageUrl(portfolio?['image']?.toString());
+    final imageUrl = ApiService.imageUrl(portfolio?['image_url']?.toString() ?? portfolio?['image']?.toString());
     final progress = order['progress'] ?? 0;
 
     return Container(

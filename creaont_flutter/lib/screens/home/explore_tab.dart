@@ -192,7 +192,7 @@ class _ExploreTabState extends State<ExploreTab> {
                           item: portfolios[i],
                           onTap: () {
                             final item = portfolios[i];
-                            final imageUrl = ApiService.imageUrl(item['image']);
+                            final imageUrl = ApiService.imageUrl(item['image_url'] ?? item['image']);
                             Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -239,7 +239,7 @@ class _PortfolioCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final imageUrl = ApiService.imageUrl(item['image']);
+    final imageUrl = ApiService.imageUrl(item['image_url'] ?? item['image']);
     final price = item['price'];
     final num p = price is num ? price : double.tryParse(price.toString()) ?? 0;
     final priceStr = p

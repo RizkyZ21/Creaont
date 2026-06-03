@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../services/order/order_service.dart';
-import '../payment/invoice_screen.dart';
+import 'invoice_screen.dart';
 
 class CreateOrderScreen extends StatefulWidget {
   final String title;
@@ -217,7 +217,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
               const SizedBox(height: 20),
               ValueListenableBuilder(
                 valueListenable: _daysCtrl,
-                builder: (_, __, ___) {
+                builder: (context, value, child) {
                   final days = int.tryParse(_daysCtrl.text) ?? 0;
                   if (days < 1) return const SizedBox.shrink();
                   final d = DateTime.now().add(Duration(days: days));

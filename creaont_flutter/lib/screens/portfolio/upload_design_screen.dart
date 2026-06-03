@@ -1,4 +1,3 @@
-import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -101,7 +100,7 @@ class _UploadDesignScreenState extends State<UploadDesignScreen> {
   ];
 
   Future<void> _pickRawFile() async {
-    final result = await FilePicker.platform.pickFiles(
+    final result = await FilePicker.pickFiles(
       type: FileType.any,
       withData: true, // wajib true agar bytes tersedia di web
       withReadStream: false,

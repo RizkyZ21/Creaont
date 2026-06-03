@@ -212,7 +212,7 @@ class _HomeTabState extends State<HomeTab> {
                       rank: i + 1,
                       onTap: () {
                         final item = popular[i];
-                        final imageUrl = ApiService.imageUrl(item['image']);
+                        final imageUrl = ApiService.imageUrl(item['image_url'] ?? item['image']);
                         Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -410,9 +410,10 @@ class _PopularCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final imageUrl = ApiService.imageUrl(item['image']);
+    final imageUrl = ApiService.imageUrl(item['image_url'] ?? item['image']);
     final designerName = item['user']?['name'] ?? 'Designer';
     final ordersCount = item['orders_count'] ?? 0;
+    final avgRating   = item['reviews_avg_rating'];
     final price = item['price'];
     final num p = price is num ? price : double.tryParse(price.toString()) ?? 0;
     final priceStr = p
@@ -526,6 +527,15 @@ class _PopularCard extends StatelessWidget {
                         ),
                       ),
                       const Spacer(),
+                      if (avgRating != null) ...[
+                        const Icon(Icons.star, color: Colors.amber, size: 13),
+                        const SizedBox(width: 2),
+                        Text(
+                          double.tryParse(avgRating.toString())?.toStringAsFixed(1) ?? '',
+                          style: const TextStyle(color: Colors.amber, fontSize: 11),
+                        ),
+                        const SizedBox(width: 6),
+                      ],
                       if (ordersCount > 0) ...[
                         const Icon(
                           Icons.shopping_bag_outlined,
