@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../../services/order/order_service.dart';
 import '../../services/portfolio/portfolio_service.dart';
+import '../../services/core/api_service.dart';
 
 // Web-only download helper
 import 'dart:html' as html show AnchorElement, Url, Blob;
@@ -252,6 +253,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   Widget _infoCard() {
     final status = order!['status'] ?? '';
     final title = order!['portfolio']?['title'] ?? 'Order #${order!['id']}';
+    final imageUrl = ApiService.imageUrl(
+      order!['portfolio']?['image']?.toString(),
+    );
     final price = order!['total_price'] ?? 0;
     final deadline = order!['deadline'];
     final rawType = order!['portfolio']?['raw_file_type'];
@@ -266,6 +270,35 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              width: double.infinity,
+              height: 180,
+              color: Colors.white10,
+              child: imageUrl.isEmpty
+                  ? const Center(
+                      child: Icon(
+                        Icons.image_not_supported,
+                        color: Colors.white38,
+                        size: 42,
+                      ),
+                    )
+                  : Image.network(
+                      imageUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) =>
+                          const Center(
+                            child: Icon(
+                              Icons.broken_image,
+                              color: Colors.white38,
+                              size: 42,
+                            ),
+                          ),
+                    ),
+            ),
+          ),
+          const SizedBox(height: 14),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [

@@ -25,9 +25,19 @@ Route::prefix('admin')->group(function () {
         
         // Users
         Route::get('/users', [AdminController::class, 'users'])->name('admin.users');
+        Route::get('/users/create', [AdminController::class, 'createUser'])->name('admin.create-user');
+        Route::post('/users', [AdminController::class, 'storeUser'])->name('admin.store-user');
         Route::get('/users/{id}/edit', [AdminController::class, 'editUser'])->name('admin.edit-user');
         Route::put('/users/{id}', [AdminController::class, 'updateUser'])->name('admin.update-user');
         Route::delete('/users/{id}', [AdminController::class, 'deleteUser'])->name('admin.delete-user');
+
+        // Categories
+        Route::get('/categories', [AdminController::class, 'categories'])->name('admin.categories');
+        Route::get('/categories/create', [AdminController::class, 'createCategory'])->name('admin.create-category');
+        Route::post('/categories', [AdminController::class, 'storeCategory'])->name('admin.store-category');
+        Route::get('/categories/{id}/edit', [AdminController::class, 'editCategory'])->name('admin.edit-category');
+        Route::put('/categories/{id}', [AdminController::class, 'updateCategory'])->name('admin.update-category');
+        Route::delete('/categories/{id}', [AdminController::class, 'deleteCategory'])->name('admin.delete-category');
 
         // Orders
         Route::get('/orders', [AdminController::class, 'orders'])->name('admin.orders');

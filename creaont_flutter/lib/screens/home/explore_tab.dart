@@ -16,7 +16,8 @@ class _ExploreTabState extends State<ExploreTab> {
   String selectedCategory = 'All';
   final _searchCtrl = TextEditingController();
 
-  final categories = [
+  List<String> categories = const ['All'];
+  static const _fallbackCategories = [
     'All',
     'UI/UX',
     'Logo',
@@ -29,7 +30,7 @@ class _ExploreTabState extends State<ExploreTab> {
   @override
   void initState() {
     super.initState();
-    _load();
+    _init();
   }
 
   @override
@@ -50,6 +51,35 @@ class _ExploreTabState extends State<ExploreTab> {
         portfolios = res['success'] == true ? (res['data'] as List) : [];
       });
     }
+  }
+
+  Future<void> _init() async {
+    await _loadCategories();
+    await _load();
+  }
+
+  Future<void> _loadCategories() async {
+    final res = await PortfolioService.getCategories();
+    if (!mounted) return;
+
+    final loaded = res['success'] == true
+        ? ((res['data'] as List?) ?? [])
+              .map(
+                (item) =>
+                    item is Map ? item['name']?.toString() : item.toString(),
+              )
+              .whereType<String>()
+              .where((name) => name.trim().isNotEmpty)
+              .toList()
+        : <String>[];
+
+    setState(() {
+      categories = [
+        'All',
+        ...(loaded.isNotEmpty ? loaded : _fallbackCategories.skip(1)),
+      ];
+      if (!categories.contains(selectedCategory)) selectedCategory = 'All';
+    });
   }
 
   @override
@@ -239,7 +269,8 @@ class _PortfolioCard extends StatelessWidget {
                         imageUrl,
                         width: double.infinity,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => _placeholder(),
+                        errorBuilder: (context, error, stackTrace) =>
+                            _placeholder(),
                       )
                     : _placeholder(),
               ),

@@ -5,10 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\Orders;
 use App\Models\Portfolio;
+use App\Models\Category;
 use App\Models\Chat;
 use App\Models\Review;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 
 class AdminController extends Controller
 {
@@ -24,6 +26,7 @@ class AdminController extends Controller
             'in_progress_orders' => Orders::where('status', 'in_progress')->count(),
             'completed_orders' => Orders::where('status', 'completed')->count(),
             'total_portfolios' => Portfolio::count(),
+            'total_categories' => Category::count(),
             'total_chats' => Chat::count(),
             'total_reviews' => Review::count(),
             'total_revenue' => Orders::sum('total_price'),
@@ -70,7 +73,7 @@ class AdminController extends Controller
     {
         $stats = $this->stats();
 
-        $recent_orders = Orders::with(['customer', 'designer'])
+        $recent_orders = Orders::with(['customer', 'designer', 'portfolio'])
             ->orderBy('created_at', 'desc')
             ->limit(10)
             ->get();
@@ -105,6 +108,25 @@ class AdminController extends Controller
     {
         $users = User::paginate(15);
         return view('admin.pages.users', compact('users'));
+    }
+
+    public function createUser()
+    {
+        return view('admin.pages.create-user');
+    }
+
+    public function storeUser(Request $request)
+    {
+        $data = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|string|min:8|confirmed',
+            'role' => 'required|in:customer,designer,admin',
+        ]);
+
+        User::create($data);
+
+        return redirect()->route('admin.users')->with('success', 'User berhasil dibuat');
     }
 
     public function editUser($id)
@@ -149,6 +171,75 @@ class AdminController extends Controller
         $user->delete();
 
         return redirect()->route('admin.users')->with('success', 'User berhasil dihapus');
+    }
+
+    /**
+     * Categories Management
+     */
+    public function categories()
+    {
+        $categories = Category::orderBy('name')->paginate(15);
+        return view('admin.pages.categories', compact('categories'));
+    }
+
+    public function createCategory()
+    {
+        return view('admin.pages.create-category');
+    }
+
+    public function storeCategory(Request $request)
+    {
+        $data = $request->validate([
+            'name' => 'required|string|max:100|unique:categories,name',
+            'description' => 'nullable|string',
+            'is_active' => 'nullable|boolean',
+        ]);
+
+        $data['is_active'] = $request->boolean('is_active');
+        Category::create($data);
+
+        return redirect()->route('admin.categories')->with('success', 'Category berhasil dibuat');
+    }
+
+    public function editCategory($id)
+    {
+        $category = Category::findOrFail($id);
+        return view('admin.pages.edit-category', compact('category'));
+    }
+
+    public function updateCategory(Request $request, $id)
+    {
+        $category = Category::findOrFail($id);
+
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:100', Rule::unique('categories', 'name')->ignore($category->id)],
+            'description' => 'nullable|string',
+            'is_active' => 'nullable|boolean',
+        ]);
+
+        $oldName = $category->name;
+        $data['is_active'] = $request->boolean('is_active');
+        $category->update($data);
+
+        if ($oldName !== $category->name) {
+            Portfolio::where('category', $oldName)->update(['category' => $category->name]);
+        }
+
+        return redirect()->route('admin.categories')->with('success', 'Category berhasil diperbarui');
+    }
+
+    public function deleteCategory($id)
+    {
+        $category = Category::findOrFail($id);
+        $usedCount = Portfolio::where('category', $category->name)->count();
+
+        if ($usedCount > 0) {
+            return back()->with('error', "Category masih dipakai oleh {$usedCount} portfolio");
+        }
+
+        $category->delete();
+
+        return redirect()->route('admin.categories')->with('success', 'Category berhasil dihapus');
     }
 
     /**

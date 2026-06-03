@@ -12,19 +12,20 @@ class HomeTab extends StatefulWidget {
 }
 
 class _HomeTabState extends State<HomeTab> {
-  String name            = 'User';
-  String selectedCat     = 'All';
-  List<dynamic> popular  = [];
-  bool isLoading         = true;
+  String name = 'User';
+  String selectedCat = 'All';
+  List<dynamic> popular = [];
+  List<String> categories = const ['All'];
+  bool isLoading = true;
 
-  static const _categories = [
-    {'label': 'All',          'icon': Icons.apps},
-    {'label': 'UI/UX',        'icon': Icons.design_services},
-    {'label': 'Logo',         'icon': Icons.brush},
-    {'label': 'Illustration', 'icon': Icons.palette},
-    {'label': 'Branding',     'icon': Icons.campaign},
-    {'label': 'Motion',       'icon': Icons.movie_filter},
-    {'label': 'Other',        'icon': Icons.category},
+  static const _fallbackCategories = [
+    'All',
+    'UI/UX',
+    'Logo',
+    'Illustration',
+    'Branding',
+    'Motion',
+    'Other',
   ];
 
   @override
@@ -36,7 +37,32 @@ class _HomeTabState extends State<HomeTab> {
   Future<void> _init() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() => name = prefs.getString('name') ?? 'User');
+    await _loadCategories();
     await _loadPopular();
+  }
+
+  Future<void> _loadCategories() async {
+    final res = await PortfolioService.getCategories();
+    if (!mounted) return;
+
+    final loaded = res['success'] == true
+        ? ((res['data'] as List?) ?? [])
+              .map(
+                (item) =>
+                    item is Map ? item['name']?.toString() : item.toString(),
+              )
+              .whereType<String>()
+              .where((name) => name.trim().isNotEmpty)
+              .toList()
+        : <String>[];
+
+    setState(() {
+      categories = [
+        'All',
+        ...(loaded.isNotEmpty ? loaded : _fallbackCategories.skip(1)),
+      ];
+      if (!categories.contains(selectedCat)) selectedCat = 'All';
+    });
   }
 
   Future<void> _loadPopular() async {
@@ -48,7 +74,7 @@ class _HomeTabState extends State<HomeTab> {
     if (mounted) {
       setState(() {
         isLoading = false;
-        popular   = res['success'] == true ? (res['data'] as List) : [];
+        popular = res['success'] == true ? (res['data'] as List) : [];
       });
     }
   }
@@ -89,11 +115,24 @@ class _HomeTabState extends State<HomeTab> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('Kategori', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                      const Text(
+                        'Kategori',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                       if (selectedCat != 'All')
                         GestureDetector(
                           onTap: () => _selectCategory('All'),
-                          child: const Text('Reset', style: TextStyle(color: Colors.purpleAccent, fontSize: 13)),
+                          child: const Text(
+                            'Reset',
+                            style: TextStyle(
+                              color: Colors.purpleAccent,
+                              fontSize: 13,
+                            ),
+                          ),
                         ),
                     ],
                   ),
@@ -107,11 +146,21 @@ class _HomeTabState extends State<HomeTab> {
                   padding: const EdgeInsets.fromLTRB(16, 24, 16, 12),
                   child: Row(
                     children: [
-                      const Icon(Icons.local_fire_department, color: Colors.orangeAccent, size: 20),
+                      const Icon(
+                        Icons.local_fire_department,
+                        color: Colors.orangeAccent,
+                        size: 20,
+                      ),
                       const SizedBox(width: 6),
                       Text(
-                        selectedCat == 'All' ? 'Paling Populer' : 'Populer — $selectedCat',
-                        style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                        selectedCat == 'All'
+                            ? 'Paling Populer'
+                            : 'Populer — $selectedCat',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ],
                   ),
@@ -123,7 +172,11 @@ class _HomeTabState extends State<HomeTab> {
                 const SliverToBoxAdapter(
                   child: Padding(
                     padding: EdgeInsets.all(40),
-                    child: Center(child: CircularProgressIndicator(color: Colors.purpleAccent)),
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        color: Colors.purpleAccent,
+                      ),
+                    ),
                   ),
                 )
               else if (popular.isEmpty)
@@ -133,7 +186,11 @@ class _HomeTabState extends State<HomeTab> {
                     child: Center(
                       child: Column(
                         children: [
-                          const Icon(Icons.search_off, color: Colors.white24, size: 48),
+                          const Icon(
+                            Icons.search_off,
+                            color: Colors.white24,
+                            size: 48,
+                          ),
                           const SizedBox(height: 12),
                           Text(
                             selectedCat == 'All'
@@ -154,19 +211,22 @@ class _HomeTabState extends State<HomeTab> {
                       item: popular[i],
                       rank: i + 1,
                       onTap: () {
-                        final item      = popular[i];
-                        final imageUrl  = ApiService.imageUrl(item['image']);
-                        Navigator.push(context, MaterialPageRoute(
-                          builder: (_) => ServiceOptionScreen(
-                            portfolioId:  item['id'],
-                            designerId:   item['user_id'],
-                            title:        item['title'],
-                            price:        'Rp ${_fmt(item['price'])}',
-                            description:  item['description'] ?? '',
-                            designerName: item['user']?['name'] ?? 'Designer',
-                            imageUrl:     imageUrl,
+                        final item = popular[i];
+                        final imageUrl = ApiService.imageUrl(item['image']);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => ServiceOptionScreen(
+                              portfolioId: item['id'],
+                              designerId: item['user_id'],
+                              title: item['title'],
+                              price: 'Rp ${_fmt(item['price'])}',
+                              description: item['description'] ?? '',
+                              designerName: item['user']?['name'] ?? 'Designer',
+                              imageUrl: imageUrl,
+                            ),
                           ),
-                        ));
+                        );
                       },
                     ),
                     childCount: popular.length,
@@ -183,16 +243,23 @@ class _HomeTabState extends State<HomeTab> {
 
   Widget _buildHeader() {
     final hour = DateTime.now().hour;
-    final greeting = hour < 12 ? 'Good Morning' : hour < 17 ? 'Good Afternoon' : 'Good Evening';
+    final greeting = hour < 12
+        ? 'Good Morning'
+        : hour < 17
+        ? 'Good Afternoon'
+        : 'Good Evening';
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
       child: Row(
         children: [
           Container(
-            width: 44, height: 44,
+            width: 44,
+            height: 44,
             decoration: const BoxDecoration(
-              gradient: LinearGradient(colors: [Color(0xFF7F00FF), Color(0xFFE100FF)]),
+              gradient: LinearGradient(
+                colors: [Color(0xFF7F00FF), Color(0xFFE100FF)],
+              ),
               shape: BoxShape.circle,
             ),
             child: const Icon(Icons.person, color: Colors.white),
@@ -201,14 +268,27 @@ class _HomeTabState extends State<HomeTab> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(greeting, style: const TextStyle(color: Colors.white54, fontSize: 13)),
-              Text(name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+              Text(
+                greeting,
+                style: const TextStyle(color: Colors.white54, fontSize: 13),
+              ),
+              Text(
+                name,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
             ],
           ),
           const Spacer(),
           Container(
             padding: const EdgeInsets.all(8),
-            decoration: const BoxDecoration(color: Colors.white10, shape: BoxShape.circle),
+            decoration: const BoxDecoration(
+              color: Colors.white10,
+              shape: BoxShape.circle,
+            ),
             child: const Icon(Icons.notifications_none, color: Colors.white),
           ),
         ],
@@ -230,7 +310,10 @@ class _HomeTabState extends State<HomeTab> {
           children: const [
             Icon(Icons.search, color: Colors.white38),
             SizedBox(width: 10),
-            Text('Cari desainer atau karya...', style: TextStyle(color: Colors.white38)),
+            Text(
+              'Cari desainer atau karya...',
+              style: TextStyle(color: Colors.white38),
+            ),
           ],
         ),
       ),
@@ -243,10 +326,10 @@ class _HomeTabState extends State<HomeTab> {
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 16),
-        itemCount: _categories.length,
+        itemCount: categories.length,
         itemBuilder: (_, i) {
-          final cat    = _categories[i]['label'] as String;
-          final icon   = _categories[i]['icon'] as IconData;
+          final cat = categories[i];
+          final icon = _categoryIcon(cat);
           final active = selectedCat == cat;
           return GestureDetector(
             onTap: () => _selectCategory(cat),
@@ -256,14 +339,20 @@ class _HomeTabState extends State<HomeTab> {
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
               decoration: BoxDecoration(
                 gradient: active
-                    ? const LinearGradient(colors: [Color(0xFF7F00FF), Color(0xFFE100FF)])
+                    ? const LinearGradient(
+                        colors: [Color(0xFF7F00FF), Color(0xFFE100FF)],
+                      )
                     : null,
                 color: active ? null : Colors.white10,
                 borderRadius: BorderRadius.circular(22),
               ),
               child: Row(
                 children: [
-                  Icon(icon, size: 15, color: active ? Colors.white : Colors.white54),
+                  Icon(
+                    icon,
+                    size: 15,
+                    color: active ? Colors.white : Colors.white54,
+                  ),
                   const SizedBox(width: 6),
                   Text(
                     cat,
@@ -282,12 +371,27 @@ class _HomeTabState extends State<HomeTab> {
     );
   }
 
+  IconData _categoryIcon(String category) {
+    return switch (category.toLowerCase()) {
+      'all' => Icons.apps,
+      'ui/ux' => Icons.design_services,
+      'logo' => Icons.brush,
+      'illustration' => Icons.palette,
+      'branding' => Icons.campaign,
+      'motion' => Icons.movie_filter,
+      _ => Icons.category,
+    };
+  }
+
   String _fmt(dynamic price) {
     if (price == null) return '0';
     final num p = price is num ? price : double.tryParse(price.toString()) ?? 0;
-    return p.toStringAsFixed(0).replaceAllMapped(
-      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]}.',
-    );
+    return p
+        .toStringAsFixed(0)
+        .replaceAllMapped(
+          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+          (m) => '${m[1]}.',
+        );
   }
 }
 
@@ -298,18 +402,25 @@ class _PopularCard extends StatelessWidget {
   final int rank;
   final VoidCallback onTap;
 
-  const _PopularCard({required this.item, required this.rank, required this.onTap});
+  const _PopularCard({
+    required this.item,
+    required this.rank,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final imageUrl     = ApiService.imageUrl(item['image']);
+    final imageUrl = ApiService.imageUrl(item['image']);
     final designerName = item['user']?['name'] ?? 'Designer';
-    final ordersCount  = item['orders_count'] ?? 0;
-    final price        = item['price'];
-    final num p        = price is num ? price : double.tryParse(price.toString()) ?? 0;
-    final priceStr     = p.toStringAsFixed(0).replaceAllMapped(
-      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]}.',
-    );
+    final ordersCount = item['orders_count'] ?? 0;
+    final price = item['price'];
+    final num p = price is num ? price : double.tryParse(price.toString()) ?? 0;
+    final priceStr = p
+        .toStringAsFixed(0)
+        .replaceAllMapped(
+          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+          (m) => '${m[1]}.',
+        );
 
     return GestureDetector(
       onTap: onTap,
@@ -320,14 +431,18 @@ class _PopularCard extends StatelessWidget {
           color: const Color(0xFF1E1B3A),
           borderRadius: BorderRadius.circular(18),
           border: rank <= 3
-              ? Border.all(color: _rankColor(rank).withValues(alpha: 0.4), width: 1)
+              ? Border.all(
+                  color: _rankColor(rank).withValues(alpha: 0.4),
+                  width: 1,
+                )
               : null,
         ),
         child: Row(
           children: [
             // Rank badge
             Container(
-              width: 32, height: 32,
+              width: 32,
+              height: 32,
               decoration: BoxDecoration(
                 color: _rankColor(rank).withValues(alpha: 0.15),
                 shape: BoxShape.circle,
@@ -335,7 +450,14 @@ class _PopularCard extends StatelessWidget {
               child: Center(
                 child: rank <= 3
                     ? Icon(_rankIcon(rank), color: _rankColor(rank), size: 18)
-                    : Text('$rank', style: TextStyle(color: _rankColor(rank), fontWeight: FontWeight.bold, fontSize: 13)),
+                    : Text(
+                        '$rank',
+                        style: TextStyle(
+                          color: _rankColor(rank),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                        ),
+                      ),
               ),
             ),
             const SizedBox(width: 12),
@@ -344,8 +466,14 @@ class _PopularCard extends StatelessWidget {
             ClipRRect(
               borderRadius: BorderRadius.circular(12),
               child: imageUrl.isNotEmpty
-                  ? Image.network(imageUrl, width: 58, height: 58, fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => _placeholder())
+                  ? Image.network(
+                      imageUrl,
+                      width: 58,
+                      height: 58,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) =>
+                          _placeholder(),
+                    )
                   : _placeholder(),
             ),
             const SizedBox(width: 12),
@@ -357,19 +485,30 @@ class _PopularCard extends StatelessWidget {
                 children: [
                   Text(
                     item['title'] ?? '-',
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 3),
                   Row(
                     children: [
-                      const Icon(Icons.person_outline, color: Colors.white38, size: 12),
+                      const Icon(
+                        Icons.person_outline,
+                        color: Colors.white38,
+                        size: 12,
+                      ),
                       const SizedBox(width: 3),
                       Expanded(
                         child: Text(
                           designerName,
-                          style: const TextStyle(color: Colors.white54, fontSize: 12),
+                          style: const TextStyle(
+                            color: Colors.white54,
+                            fontSize: 12,
+                          ),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
@@ -378,14 +517,28 @@ class _PopularCard extends StatelessWidget {
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      Text('Rp $priceStr', style: const TextStyle(color: Colors.purpleAccent, fontSize: 13, fontWeight: FontWeight.bold)),
+                      Text(
+                        'Rp $priceStr',
+                        style: const TextStyle(
+                          color: Colors.purpleAccent,
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                       const Spacer(),
                       if (ordersCount > 0) ...[
-                        const Icon(Icons.shopping_bag_outlined, color: Colors.white38, size: 13),
+                        const Icon(
+                          Icons.shopping_bag_outlined,
+                          color: Colors.white38,
+                          size: 13,
+                        ),
                         const SizedBox(width: 3),
                         Text(
                           '$ordersCount terjual',
-                          style: const TextStyle(color: Colors.white38, fontSize: 11),
+                          style: const TextStyle(
+                            color: Colors.white38,
+                            fontSize: 11,
+                          ),
                         ),
                       ],
                     ],
@@ -394,7 +547,11 @@ class _PopularCard extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 8),
-            const Icon(Icons.arrow_forward_ios, color: Colors.white24, size: 14),
+            const Icon(
+              Icons.arrow_forward_ios,
+              color: Colors.white24,
+              size: 14,
+            ),
           ],
         ),
       ),
@@ -402,9 +559,12 @@ class _PopularCard extends StatelessWidget {
   }
 
   Widget _placeholder() => Container(
-    width: 58, height: 58,
+    width: 58,
+    height: 58,
     decoration: BoxDecoration(
-      gradient: const LinearGradient(colors: [Color(0xFF7F00FF), Color(0xFFE100FF)]),
+      gradient: const LinearGradient(
+        colors: [Color(0xFF7F00FF), Color(0xFFE100FF)],
+      ),
       borderRadius: BorderRadius.circular(12),
     ),
     child: const Icon(Icons.design_services, color: Colors.white, size: 24),

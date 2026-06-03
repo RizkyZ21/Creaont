@@ -31,6 +31,7 @@ class ApiService {
   static String get portfolioUrl => '$baseUrl/portfolios';
   static String get portfolioPopularUrl => '$baseUrl/portfolios/popular';
   static String get servicesUrl => '$baseUrl/services';
+  static String get categoriesUrl => '$baseUrl/categories';
   static String get myPortfoliosUrl => '$baseUrl/my-portfolios';
   static String portfolioDetailUrl(int id) => '$baseUrl/portfolios/$id';
   static String portfolioByDesigner(int id) =>
@@ -52,9 +53,17 @@ class ApiService {
 
   // Image URL helper
   static String imageUrl(String? path) {
-    if (path == null || path.isEmpty) return '';
-    if (path.startsWith('http')) return path;
-    return '$storageUrl/$path';
+    final value = path?.trim();
+    if (value == null || value.isEmpty) return '';
+    if (value.startsWith('http://') || value.startsWith('https://')) {
+      return value;
+    }
+
+    final normalized = value
+        .replaceFirst(RegExp(r'^/+'), '')
+        .replaceFirst(RegExp(r'^storage/+'), '');
+
+    return '$storageUrl/$normalized';
   }
 
   static Map<String, String> headers({String? token}) {

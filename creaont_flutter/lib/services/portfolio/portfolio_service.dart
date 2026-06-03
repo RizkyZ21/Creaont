@@ -9,6 +9,8 @@ import 'package:file_picker/file_picker.dart';
 import '../core/api_service.dart';
 
 class PortfolioService {
+  static const int _maxThumbnailBytes = 4 * 1024 * 1024;
+
   // ── Semua portfolio ───────────────────────────────────────────────
   static Future<Map<String, dynamic>> getPortfolios({
     String? category,
@@ -41,6 +43,19 @@ class PortfolioService {
         },
       );
       return _parse(await http.get(uri, headers: ApiService.headers()));
+    } catch (e) {
+      return {'success': false, 'message': 'Koneksi gagal: $e'};
+    }
+  }
+
+  static Future<Map<String, dynamic>> getCategories() async {
+    try {
+      return _parse(
+        await http.get(
+          Uri.parse(ApiService.categoriesUrl),
+          headers: ApiService.headers(),
+        ),
+      );
     } catch (e) {
       return {'success': false, 'message': 'Koneksi gagal: $e'};
     }
@@ -107,7 +122,12 @@ class PortfolioService {
   }) async {
     try {
       final imageBytes = await imageXFile.readAsBytes();
-      final imageMime = _mimeFromBytes(imageBytes);
+      final imageError = _validateImageBytes(imageBytes);
+      if (imageError != null) {
+        return {'success': false, 'message': imageError};
+      }
+
+      final imageMime = _mimeFromBytes(imageBytes)!;
       final imageExt = imageMime.subtype; // png / jpeg / webp
       final imageName = 'thumbnail.$imageExt';
 
@@ -163,7 +183,12 @@ class PortfolioService {
 
       if (imageXFile != null) {
         final bytes = await imageXFile.readAsBytes();
-        final mime = _mimeFromBytes(bytes);
+        final imageError = _validateImageBytes(bytes);
+        if (imageError != null) {
+          return {'success': false, 'message': imageError};
+        }
+
+        final mime = _mimeFromBytes(bytes)!;
         fields['image'] = MultipartFile.fromBytes(
           bytes,
           filename: 'thumbnail.${mime.subtype}',
@@ -256,8 +281,21 @@ class PortfolioService {
     return dio;
   }
 
-  // Deteksi MIME dari magic bytes — akurat tanpa bergantung nama file
-  static MediaType _mimeFromBytes(Uint8List bytes) {
+  static String? _validateImageBytes(Uint8List bytes) {
+    if (bytes.isEmpty) {
+      return 'Gambar tidak dapat dibaca. Pilih file lain.';
+    }
+    if (bytes.length > _maxThumbnailBytes) {
+      return 'Ukuran thumbnail maksimal 4MB. Kompres gambar dulu atau pilih file yang lebih kecil.';
+    }
+    if (_mimeFromBytes(bytes) == null) {
+      return 'Format gambar tidak didukung. Gunakan JPG, PNG, atau WEBP.';
+    }
+    return null;
+  }
+
+  // Deteksi MIME dari magic bytes agar tidak bergantung nama file.
+  static MediaType? _mimeFromBytes(Uint8List bytes) {
     if (bytes.length >= 12) {
       if (bytes[0] == 0x89 &&
           bytes[1] == 0x50 &&
@@ -279,7 +317,7 @@ class PortfolioService {
         return MediaType('image', 'webp');
       }
     }
-    return MediaType('image', 'jpeg');
+    return null;
   }
 
   static Map<String, dynamic> _parseDio(Response response) {

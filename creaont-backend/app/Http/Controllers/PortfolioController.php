@@ -3,11 +3,21 @@
 namespace App\Http\Controllers;
 
 use App\Models\Portfolio;
+use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 class PortfolioController extends Controller
 {
+    public function categories()
+    {
+        $categories = Category::where('is_active', true)
+            ->orderBy('name')
+            ->get(['id', 'name', 'description']);
+
+        return response()->json(['success' => true, 'data' => $categories]);
+    }
+
     // ── Public: semua portfolio ───────────────────────────────────────
     public function index(Request $request)
     {
@@ -100,16 +110,9 @@ class PortfolioController extends Controller
             ], 422);
         }
 
-        // Validasi MIME via magic bytes (lebih reliable daripada mimes: rule)
-        $imgBytes = file_get_contents($request->file('image')->getRealPath(), false, null, 0, 12);
-        $isPng  = substr($imgBytes, 0, 4) === "\x89PNG";
-        $isJpeg = substr($imgBytes, 0, 3) === "\xFF\xD8\xFF";
-        $isWebp = substr($imgBytes, 0, 4) === 'RIFF' && substr($imgBytes, 8, 4) === 'WEBP';
-        if (!$isPng && !$isJpeg && !$isWebp) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Format gambar tidak valid. Gunakan JPG, PNG, atau WEBP.',
-            ], 422);
+        $imageError = $this->validateImageFile($request->file('image'));
+        if ($imageError) {
+            return $imageError;
         }
 
         // Simpan thumbnail
@@ -167,6 +170,11 @@ class PortfolioController extends Controller
         ]);
 
         if ($request->hasFile('image')) {
+            $imageError = $this->validateImageFile($request->file('image'));
+            if ($imageError) {
+                return $imageError;
+            }
+
             if ($portfolio->image) Storage::disk('public')->delete($portfolio->image);
             $portfolio->image = $request->file('image')->store('portfolios/thumbnails', 'public');
         }
@@ -292,5 +300,29 @@ class PortfolioController extends Controller
             $portfolio->raw_file,
             $portfolio->raw_file_name ?? 'file.' . $portfolio->raw_file_type
         );
+    }
+
+    private function validateImageFile($image)
+    {
+        if (!$image || !$image->isValid()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gambar tidak dapat dibaca. Pilih file lain.',
+            ], 422);
+        }
+
+        $imgBytes = file_get_contents($image->getRealPath(), false, null, 0, 12);
+        $isPng  = substr($imgBytes, 0, 4) === "\x89PNG";
+        $isJpeg = substr($imgBytes, 0, 3) === "\xFF\xD8\xFF";
+        $isWebp = substr($imgBytes, 0, 4) === 'RIFF' && substr($imgBytes, 8, 4) === 'WEBP';
+
+        if (!$isPng && !$isJpeg && !$isWebp) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Format gambar tidak valid. Gunakan JPG, PNG, atau WEBP.',
+            ], 422);
+        }
+
+        return null;
     }
 }

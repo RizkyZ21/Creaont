@@ -15,7 +15,7 @@ class AuthController extends Controller
             $request->validate([
                 'name'     => 'required|string|max:255',
                 'email'    => 'required|email|unique:users,email',
-                'password' => 'required|string|min:6',
+                'password' => 'required|string|min:8',
                 'role'     => 'required|in:customer,designer,admin',
             ]);
 
@@ -35,7 +35,11 @@ class AuthController extends Controller
                 'user'    => $user,
             ], 201);
         } catch (\Illuminate\Validation\ValidationException $e) {
-            return response()->json(['success' => false, 'message' => $e->errors()], 422);
+            return response()->json([
+                'success' => false,
+                'message' => 'Validasi gagal',
+                'errors' => $e->errors(),
+            ], 422);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }

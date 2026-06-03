@@ -15,6 +15,7 @@ Route::post('/register', [AuthController::class, 'register']);
 Route::get('/portfolios',                       [PortfolioController::class, 'index']);
 Route::get('/portfolios/popular',               [PortfolioController::class, 'popular']);
 Route::get('/services',                         [PortfolioController::class, 'services']);
+Route::get('/categories',                       [PortfolioController::class, 'categories']);
 Route::get('/portfolios/designer/{designerId}', [PortfolioController::class, 'byDesigner']);
 
 // ── Protected ────────────────────────────────────────────────────────

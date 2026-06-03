@@ -25,11 +25,7 @@ class _RegisterPageState extends State<RegisterPage> {
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [
-              Color(0xFF0F0C29),
-              Color(0xFF302B63),
-              Color(0xFF24243E),
-            ],
+            colors: [Color(0xFF0F0C29), Color(0xFF302B63), Color(0xFF24243E)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -49,7 +45,11 @@ class _RegisterPageState extends State<RegisterPage> {
                     ),
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child: const Icon(Icons.auto_awesome, color: Colors.white, size: 40),
+                  child: const Icon(
+                    Icons.auto_awesome,
+                    color: Colors.white,
+                    size: 40,
+                  ),
                 ),
 
                 const SizedBox(height: 20),
@@ -156,21 +156,25 @@ class _RegisterPageState extends State<RegisterPage> {
                         controller: passwordController,
                         obscureText: isHidden,
                         style: const TextStyle(color: Colors.white),
-                        decoration: _input("Password", Icons.lock).copyWith(
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              isHidden
-                                  ? Icons.visibility_off
-                                  : Icons.visibility,
-                              color: Colors.white54,
+                        decoration:
+                            _input(
+                              "Password (min. 8 karakter)",
+                              Icons.lock,
+                            ).copyWith(
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  isHidden
+                                      ? Icons.visibility_off
+                                      : Icons.visibility,
+                                  color: Colors.white54,
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    isHidden = !isHidden;
+                                  });
+                                },
+                              ),
                             ),
-                            onPressed: () {
-                              setState(() {
-                                isHidden = !isHidden;
-                              });
-                            },
-                          ),
-                        ),
                       ),
 
                       const SizedBox(height: 20),
@@ -183,7 +187,9 @@ class _RegisterPageState extends State<RegisterPage> {
                               child: ElevatedButton(
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.purpleAccent,
-                                  padding: const EdgeInsets.symmetric(vertical: 14),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 14,
+                                  ),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(12),
                                   ),
@@ -194,7 +200,21 @@ class _RegisterPageState extends State<RegisterPage> {
                                       passwordController.text.isEmpty) {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       const SnackBar(
-                                        content: Text("Semua field wajib diisi"),
+                                        content: Text(
+                                          "Semua field wajib diisi",
+                                        ),
+                                      ),
+                                    );
+                                    return;
+                                  }
+
+                                  if (passwordController.text.trim().length <
+                                      8) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                          "Password minimal 8 karakter",
+                                        ),
                                       ),
                                     );
                                     return;

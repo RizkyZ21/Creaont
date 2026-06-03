@@ -28,7 +28,7 @@ class _UploadDesignScreenState extends State<UploadDesignScreen> {
   // Raw file
   PlatformFile? _rawFile;
 
-  final categories = [
+  List<String> categories = const [
     'UI/UX',
     'Logo',
     'Illustration',
@@ -37,14 +37,39 @@ class _UploadDesignScreenState extends State<UploadDesignScreen> {
     'Other',
   ];
 
+  @override
+  void initState() {
+    super.initState();
+    _loadCategories();
+  }
+
+  Future<void> _loadCategories() async {
+    final res = await PortfolioService.getCategories();
+    if (!mounted || res['success'] != true) return;
+
+    final loaded = ((res['data'] as List?) ?? [])
+        .map((item) => item is Map ? item['name']?.toString() : item.toString())
+        .whereType<String>()
+        .where((name) => name.trim().isNotEmpty)
+        .toList();
+
+    if (loaded.isEmpty) return;
+
+    setState(() {
+      categories = loaded;
+      if (!categories.contains(_category)) {
+        _category = categories.first;
+      }
+    });
+  }
+
   // ── Pick thumbnail dari galeri ─────────────────────────────────────
   Future<void> _pickImage() async {
-    // imageQuality hanya untuk JPEG — jangan compress PNG karena
-    // akan mengubah MIME type menjadi image/jpeg tapi nama file tetap .png
-    // sehingga validasi Laravel `mimes:jpg,jpeg,png,webp` gagal.
     final picked = await ImagePicker().pickImage(
       source: ImageSource.gallery,
-      imageQuality: null, // biarkan original agar MIME type tetap valid
+      maxWidth: 1600,
+      maxHeight: 1600,
+      imageQuality: 85,
     );
     if (picked == null) return;
     final bytes = await picked.readAsBytes();
