@@ -11,13 +11,14 @@ class PortfolioController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Portfolio::with('user:id,name')->where('type', 'design');
+        $query = Portfolio::with('user:id,name')
+            ->where('type', $request->input('type', 'design'));
 
         if ($request->filled('category') && $request->category !== 'All') {
             $query->where('category', $request->category);
         }
         if ($request->filled('search')) {
-            $query->where('title', 'like', '%' . $request->search . '%');
+            $this->applySearch($query, $request->search);
         }
 
         return response()->json(['success' => true, 'data' => $query->latest()->get()]);
@@ -34,6 +35,9 @@ class PortfolioController extends Controller
 
         if ($request->filled('category') && $request->category !== 'All') {
             $query->where('category', $request->category);
+        }
+        if ($request->filled('search')) {
+            $this->applySearch($query, $request->search);
         }
 
         return response()->json([
@@ -66,7 +70,7 @@ class PortfolioController extends Controller
             $query->where('category', $request->category);
         }
         if ($request->filled('search')) {
-            $query->where('title', 'like', '%' . $request->search . '%');
+            $this->applySearch($query, $request->search);
         }
 
         return response()->json(['success' => true, 'data' => $query->latest()->get()]);
@@ -271,5 +275,22 @@ class PortfolioController extends Controller
         }
 
         return null;
+    }
+
+    private function applySearch($query, string $search): void
+    {
+        $term = trim($search);
+        if ($term === '') return;
+
+        $query->where(function ($q) use ($term) {
+            $like = '%' . $term . '%';
+
+            $q->where('title', 'like', $like)
+                ->orWhere('description', 'like', $like)
+                ->orWhere('category', 'like', $like)
+                ->orWhereHas('user', function ($userQuery) use ($like) {
+                    $userQuery->where('name', 'like', $like);
+                });
+        });
     }
 }

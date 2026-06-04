@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Chat;
 use App\Models\Orders;
+use App\Models\User;
+use App\Notifications\NewMessageNotification;
 use Illuminate\Http\Request;
 
 class ChatController extends Controller
@@ -53,6 +55,25 @@ class ChatController extends Controller
             'message'     => $request->message,
             'sender_type' => $user->role, // 'customer', 'designer', or 'admin'
         ]);
+
+        $recipientId = null;
+        if ($user->id === $order->customer_id) {
+            $recipientId = $order->designer_id;
+        } elseif ($user->id === $order->designer_id) {
+            $recipientId = $order->customer_id;
+        }
+
+        if ($recipientId) {
+            $recipient = User::find($recipientId);
+            if ($recipient) {
+                $recipient->notify(new NewMessageNotification(
+                    orderId: $order->id,
+                    senderName: $user->name,
+                    senderRole: $user->role,
+                    messagePreview: $request->message,
+                ));
+            }
+        }
 
         return response()->json([
             'success' => true,

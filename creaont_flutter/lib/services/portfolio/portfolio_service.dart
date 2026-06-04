@@ -64,12 +64,14 @@ class PortfolioService {
   // ── Portfolio populer ─────────────────────────────────────────────
   static Future<Map<String, dynamic>> getPopularPortfolios({
     String? category,
+    String? search,
     int limit = 10,
   }) async {
     try {
       final uri = Uri.parse(ApiService.portfolioPopularUrl).replace(
         queryParameters: {
           if (category != null && category != 'All') 'category': category,
+          if (search != null && search.isNotEmpty) 'search': search,
           'limit': limit.toString(),
         },
       );

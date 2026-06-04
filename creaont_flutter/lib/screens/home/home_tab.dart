@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../services/portfolio/portfolio_service.dart';
 import '../../services/core/api_service.dart';
+import '../../widgets/notification_bell.dart';
 import '../order/service_option_screen.dart';
 
 class HomeTab extends StatefulWidget {
-  const HomeTab({super.key});
+  final VoidCallback? onSearchTap;
+
+  const HomeTab({super.key, this.onSearchTap});
 
   @override
   State<HomeTab> createState() => _HomeTabState();
@@ -212,7 +215,9 @@ class _HomeTabState extends State<HomeTab> {
                       rank: i + 1,
                       onTap: () {
                         final item = popular[i];
-                        final imageUrl = ApiService.imageUrl(item['image_url'] ?? item['image']);
+                        final imageUrl = ApiService.imageUrl(
+                          item['image_url'] ?? item['image'],
+                        );
                         Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -282,14 +287,7 @@ class _HomeTabState extends State<HomeTab> {
             ],
           ),
           const Spacer(),
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: const BoxDecoration(
-              color: Colors.white10,
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(Icons.notifications_none, color: Colors.white),
-          ),
+          const NotificationBell(),
         ],
       ),
     );
@@ -298,22 +296,31 @@ class _HomeTabState extends State<HomeTab> {
   Widget _buildSearchHint() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        decoration: BoxDecoration(
-          color: Colors.white10,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: widget.onSearchTap,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: const Color(0xFF0288D1).withValues(alpha: 0.3)),
-        ),
-        child: Row(
-          children: const [
-            Icon(Icons.search, color: Colors.white38),
-            SizedBox(width: 10),
-            Text(
-              'Cari desainer atau karya...',
-              style: TextStyle(color: Colors.white38),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            decoration: BoxDecoration(
+              color: Colors.white10,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: const Color(0xFF0288D1).withValues(alpha: 0.3),
+              ),
             ),
-          ],
+            child: const Row(
+              children: [
+                Icon(Icons.search, color: Colors.white38),
+                SizedBox(width: 10),
+                Text(
+                  'Cari desainer atau karya...',
+                  style: TextStyle(color: Colors.white38),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -412,7 +419,7 @@ class _PopularCard extends StatelessWidget {
     final imageUrl = ApiService.imageUrl(item['image_url'] ?? item['image']);
     final designerName = item['user']?['name'] ?? 'Designer';
     final ordersCount = item['orders_count'] ?? 0;
-    final avgRating   = item['reviews_avg_rating'];
+    final avgRating = item['reviews_avg_rating'];
     final price = item['price'];
     final num p = price is num ? price : double.tryParse(price.toString()) ?? 0;
     final priceStr = p
@@ -530,8 +537,14 @@ class _PopularCard extends StatelessWidget {
                         const Icon(Icons.star, color: Colors.amber, size: 13),
                         const SizedBox(width: 2),
                         Text(
-                          double.tryParse(avgRating.toString())?.toStringAsFixed(1) ?? '',
-                          style: const TextStyle(color: Colors.amber, fontSize: 11),
+                          double.tryParse(
+                                avgRating.toString(),
+                              )?.toStringAsFixed(1) ??
+                              '',
+                          style: const TextStyle(
+                            color: Colors.amber,
+                            fontSize: 11,
+                          ),
                         ),
                         const SizedBox(width: 6),
                       ],

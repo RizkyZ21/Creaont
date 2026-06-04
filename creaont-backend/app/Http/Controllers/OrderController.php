@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Orders;
 use App\Models\Portfolio;
 use App\Models\DesignFile;
+use App\Models\User;
+use App\Notifications\OrderPlacedNotification;
+use App\Notifications\ProgressUpdatedNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -104,6 +107,17 @@ class OrderController extends Controller
             'payment_status' => 'pending',
         ]);
 
+        $designer = User::find($portfolio->user_id);
+        if ($designer) {
+            $designer->notify(new OrderPlacedNotification(
+                orderId: $order->id,
+                customerName: $user->name,
+                portfolioTitle: $portfolio->title,
+                totalPrice: (float) $request->total_price,
+                orderType: $type,
+            ));
+        }
+
         return response()->json([
             'success' => true,
             'message' => 'Order berhasil dibuat',
@@ -114,7 +128,7 @@ class OrderController extends Controller
     public function update(Request $request, $id)
     {
         $user  = $request->user();
-        $order = Orders::findOrFail($id);
+        $order = Orders::with(['portfolio:id,title'])->findOrFail($id);
 
         if ($user->role !== 'admin'
             && $order->customer_id !== $user->id
@@ -152,9 +166,29 @@ class OrderController extends Controller
             ], 422);
         }
 
+        $oldStatus = $order->status;
+        $oldProgress = $order->progress;
+
         if ($request->has('status'))   $order->status   = $request->status;
         if ($request->has('progress')) $order->progress = $request->progress;
         $order->save();
+
+        $statusChanged = $request->has('status') && $request->status !== $oldStatus;
+        $progressChanged = $request->has('progress') && (int) $request->progress !== (int) $oldProgress;
+        $isDesignerOrAdmin = $user->id === $order->designer_id || $user->role === 'admin';
+
+        if ($isDesignerOrAdmin && ($statusChanged || $progressChanged)) {
+            $customer = User::find($order->customer_id);
+            if ($customer) {
+                $customer->notify(new ProgressUpdatedNotification(
+                    orderId: $order->id,
+                    designerName: $user->name,
+                    portfolioTitle: $order->portfolio?->title ?? 'Order #' . $order->id,
+                    progress: (int) $order->progress,
+                    status: $order->status,
+                ));
+            }
+        }
 
         return response()->json([
             'success' => true,
@@ -166,7 +200,7 @@ class OrderController extends Controller
     public function completeService(Request $request, $id)
     {
         $user = $request->user();
-        $order = Orders::findOrFail($id);
+        $order = Orders::with(['portfolio:id,title'])->findOrFail($id);
 
         if ($order->designer_id !== $user->id && $user->role !== 'admin') {
             return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
@@ -196,6 +230,17 @@ class OrderController extends Controller
         $order->status = 'completed';
         $order->progress = 100;
         $order->save();
+
+        $customer = User::find($order->customer_id);
+        if ($customer) {
+            $customer->notify(new ProgressUpdatedNotification(
+                orderId: $order->id,
+                designerName: $user->name,
+                portfolioTitle: $order->portfolio?->title ?? 'Order #' . $order->id,
+                progress: 100,
+                status: 'completed',
+            ));
+        }
 
         return response()->json([
             'success' => true,

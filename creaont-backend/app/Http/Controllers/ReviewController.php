@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Review;
 use App\Models\Orders;
+use App\Models\User;
+use App\Notifications\RatingReceivedNotification;
 use Illuminate\Http\Request;
 
 class ReviewController extends Controller
@@ -53,6 +55,17 @@ class ReviewController extends Controller
             'rating'      => $request->rating,
             'comment'     => $request->comment ?? '',
         ]);
+
+        $designer = User::find($order->designer_id);
+        if ($designer) {
+            $designer->notify(new RatingReceivedNotification(
+                orderId: $order->id,
+                reviewId: $review->id,
+                customerName: $user->name,
+                rating: (int) $request->rating,
+                comment: $request->comment ?? '',
+            ));
+        }
 
         return response()->json([
             'success' => true,

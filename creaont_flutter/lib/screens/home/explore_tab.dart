@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import '../../services/portfolio/portfolio_service.dart';
 import '../../services/core/api_service.dart';
@@ -15,6 +17,8 @@ class _ExploreTabState extends State<ExploreTab> {
   bool isLoading = true;
   String selectedCategory = 'All';
   final _searchCtrl = TextEditingController();
+  Timer? _searchDebounce;
+  int _loadVersion = 0;
 
   List<String> categories = const ['All'];
   static const _fallbackCategories = [
@@ -35,17 +39,19 @@ class _ExploreTabState extends State<ExploreTab> {
 
   @override
   void dispose() {
+    _searchDebounce?.cancel();
     _searchCtrl.dispose();
     super.dispose();
   }
 
   Future<void> _load() async {
+    final version = ++_loadVersion;
     setState(() => isLoading = true);
     final res = await PortfolioService.getServices(
       category: selectedCategory,
       search: _searchCtrl.text.trim(),
     );
-    if (mounted) {
+    if (mounted && version == _loadVersion) {
       setState(() {
         isLoading = false;
         portfolios = res['success'] == true ? (res['data'] as List) : [];
@@ -82,6 +88,12 @@ class _ExploreTabState extends State<ExploreTab> {
     });
   }
 
+  void _onSearchChanged(String value) {
+    setState(() {});
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(const Duration(milliseconds: 450), _load);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -94,6 +106,7 @@ class _ExploreTabState extends State<ExploreTab> {
               child: TextField(
                 controller: _searchCtrl,
                 style: const TextStyle(color: Colors.white),
+                textInputAction: TextInputAction.search,
                 decoration: InputDecoration(
                   hintText: 'Cari jasa desainer atau kategori...',
                   hintStyle: const TextStyle(color: Colors.white38),
@@ -103,6 +116,7 @@ class _ExploreTabState extends State<ExploreTab> {
                           icon: const Icon(Icons.clear, color: Colors.white38),
                           onPressed: () {
                             _searchCtrl.clear();
+                            setState(() {});
                             _load();
                           },
                         )
@@ -114,6 +128,7 @@ class _ExploreTabState extends State<ExploreTab> {
                     borderSide: BorderSide.none,
                   ),
                 ),
+                onChanged: _onSearchChanged,
                 onSubmitted: (_) => _load(),
               ),
             ),
@@ -192,7 +207,9 @@ class _ExploreTabState extends State<ExploreTab> {
                           item: portfolios[i],
                           onTap: () {
                             final item = portfolios[i];
-                            final imageUrl = ApiService.imageUrl(item['image_url'] ?? item['image']);
+                            final imageUrl = ApiService.imageUrl(
+                              item['image_url'] ?? item['image'],
+                            );
                             Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -315,7 +332,7 @@ class _PortfolioCard extends StatelessWidget {
   Widget _placeholder() => Container(
     color: const Color(0xFF0288D1).withValues(alpha: 0.2),
     child: const Center(
-      child: Icon(Icons.design_services, color: const Color(0xFF0288D1), size: 40),
+      child: Icon(Icons.design_services, color: Color(0xFF0288D1), size: 40),
     ),
   );
 }

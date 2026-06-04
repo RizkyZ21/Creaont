@@ -29,7 +29,11 @@ class _HomePageState extends State<HomePage> {
 
     switch (currentIndex) {
       case 0:
-        currentPage = const HomeTab();
+        currentPage = HomeTab(
+          onSearchTap: () {
+            setState(() => currentIndex = 1);
+          },
+        );
         break;
       case 1:
         currentPage = const ExploreTab();

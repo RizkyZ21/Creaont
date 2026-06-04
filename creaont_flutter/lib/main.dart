@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'providers/auth_provider.dart';
+import 'providers/notification_provider.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/auth/register_screen.dart';
 import 'screens/home/home_page.dart';
@@ -20,22 +21,39 @@ void main() async {
   final initialRoute = token.isEmpty
       ? '/login'
       : role == 'admin'
-          ? '/admin-dashboard'
-          : '/home';
+      ? '/admin-dashboard'
+      : '/home';
 
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => NotificationProvider()),
       ],
-      child: MyApp(initialRoute: initialRoute),
+      child: MyApp(initialRoute: initialRoute, token: token),
     ),
   );
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   final String initialRoute;
-  const MyApp({super.key, required this.initialRoute});
+  final String token;
+  const MyApp({super.key, required this.initialRoute, required this.token});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  @override
+  void initState() {
+    super.initState();
+    if (widget.token.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        context.read<NotificationProvider>().init(widget.token);
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -51,16 +69,16 @@ class MyApp extends StatelessWidget {
       ),
 
       // ── Route awal ──────────────────────────────────────
-      initialRoute: initialRoute,
+      initialRoute: widget.initialRoute,
 
       // ── Named routes ────────────────────────────────────
       routes: {
-        '/login':              (_) => const LoginScreen(),
-        '/register':           (_) => const RegisterScreen(),
-        '/home':               (_) => const HomePage(),
+        '/login': (_) => const LoginScreen(),
+        '/register': (_) => const RegisterScreen(),
+        '/home': (_) => const HomePage(),
         '/customer-dashboard': (_) => const CustomerDashboardScreen(),
-        '/dashboard':          (_) => const DesignerDashboardScreen(),
-        '/admin-dashboard':    (_) => const AdminDashboardScreen(),
+        '/dashboard': (_) => const DesignerDashboardScreen(),
+        '/admin-dashboard': (_) => const AdminDashboardScreen(),
       },
     );
   }

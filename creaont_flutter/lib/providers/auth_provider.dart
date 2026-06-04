@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/auth/auth_service.dart';
+import 'notification_provider.dart';
 
 class AuthProvider with ChangeNotifier {
   bool isLoading = false;
@@ -44,8 +46,13 @@ class AuthProvider with ChangeNotifier {
         await prefs.setInt('user_id', user['id'] ?? 0);
 
         final role = user['role'] ?? 'customer';
+        final token = res['token'] ?? '';
 
         if (!context.mounted) return;
+
+        if (token.isNotEmpty) {
+          context.read<NotificationProvider>().init(token);
+        }
 
         if (role == 'customer') {
           Navigator.pushReplacementNamed(context, '/home');
