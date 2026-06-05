@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Portfolio;
 use App\Models\Review;
+use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -78,7 +79,16 @@ class PortfolioController extends Controller
 
     public function categories(Request $request)
     {
-        $cats = Portfolio::distinct()->pluck('category')->filter()->values();
+        $cats = Category::where('is_active', true)
+            ->orderBy('name')
+            ->pluck('name')
+            ->filter()
+            ->values();
+
+        if ($cats->isEmpty()) {
+            $cats = Portfolio::distinct()->pluck('category')->filter()->values();
+        }
+
         return response()->json(['success' => true, 'data' => $cats]);
     }
 

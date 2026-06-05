@@ -23,8 +23,10 @@ class CreateOrderScreen extends StatefulWidget {
 }
 
 class _CreateOrderScreenState extends State<CreateOrderScreen> {
+  static const int _minServiceDays = 5;
+
   final _descCtrl = TextEditingController();
-  final _daysCtrl = TextEditingController(text: '3');
+  final _daysCtrl = TextEditingController(text: '5');
   bool _loading = false;
 
   bool get _isService => widget.portfolioType == 'service';
@@ -35,15 +37,15 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
   }
 
   String get _deadlineStr {
-    final days = int.tryParse(_daysCtrl.text) ?? 3;
+    final days = int.tryParse(_daysCtrl.text) ?? _minServiceDays;
     final d = DateTime.now().add(Duration(days: days));
     return '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
   }
 
   Future<void> _submit() async {
     final days = int.tryParse(_daysCtrl.text) ?? 0;
-    if (_isService && days < 1) {
-      _snack('Estimasi hari minimal 1', Colors.orange);
+    if (_isService && days < _minServiceDays) {
+      _snack('Estimasi hari minimal $_minServiceDays hari', Colors.orange);
       return;
     }
 
@@ -202,7 +204,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                 keyboardType: TextInputType.number,
                 style: const TextStyle(color: Colors.white),
                 decoration: InputDecoration(
-                  hintText: '3',
+                  hintText: '5',
                   hintStyle: const TextStyle(color: Colors.white38),
                   suffixText: 'hari',
                   suffixStyle: const TextStyle(color: Colors.white54),
@@ -214,12 +216,42 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                   ),
                 ),
               ),
+              const SizedBox(height: 8),
+              const Text(
+                'Minimal deadline order jasa adalah 5 hari.',
+                style: TextStyle(color: Colors.white38, fontSize: 12),
+              ),
               const SizedBox(height: 20),
               ValueListenableBuilder(
                 valueListenable: _daysCtrl,
                 builder: (context, value, child) {
                   final days = int.tryParse(_daysCtrl.text) ?? 0;
-                  if (days < 1) return const SizedBox.shrink();
+                  if (days < _minServiceDays) {
+                    return Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: Colors.orange.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: Colors.orange.withValues(alpha: 0.35),
+                        ),
+                      ),
+                      child: const Row(
+                        children: [
+                          Icon(Icons.warning_amber_rounded,
+                              color: Colors.orangeAccent, size: 20),
+                          SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              'Masukkan minimal 5 hari untuk melanjutkan.',
+                              style: TextStyle(color: Colors.orangeAccent),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
                   final d = DateTime.now().add(Duration(days: days));
                   final label = '${d.day} ${_months[d.month - 1]} ${d.year}';
                   return Container(

@@ -14,6 +14,7 @@ class Orders extends Model
         'status',
         'type',
         'progress',
+        'revision_count',
         'total_price',
         'deadline',
         'estimated_days',
@@ -26,6 +27,7 @@ class Orders extends Model
     protected $casts = [
         'total_price' => 'float',
         'progress'    => 'integer',
+        'revision_count' => 'integer',
         'deadline'    => 'date',
     ];
 

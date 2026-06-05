@@ -88,8 +88,8 @@ class OrderController extends Controller
 
         if ($type === 'service') {
             $request->validate([
-                'deadline'       => 'required|date|after:today',
-                'estimated_days' => 'required|integer|min:1',
+                'deadline'       => 'required|date|after_or_equal:' . now()->addDays(5)->toDateString(),
+                'estimated_days' => 'required|integer|min:5',
             ]);
         }
 
@@ -101,6 +101,7 @@ class OrderController extends Controller
             'status'         => 'pending',
             'type'           => $type,
             'progress'       => 0,
+            'revision_count' => 0,
             'deadline'       => $type === 'service' ? $request->deadline : now()->toDateString(),
             'estimated_days' => $type === 'service' ? $request->estimated_days : 0,
             'total_price'    => $request->total_price,
@@ -157,6 +158,36 @@ class OrderController extends Controller
             ], 422);
         }
 
+        if ($request->input('status') === 'revision') {
+            if ($order->type !== 'service') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Revisi hanya tersedia untuk order jasa.',
+                ], 422);
+            }
+
+            if ($user->role !== 'admin' && $order->customer_id !== $user->id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Hanya customer yang bisa meminta revisi.',
+                ], 403);
+            }
+
+            if ($order->status !== 'completed' || !$order->latestDesignFile()->exists()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Revisi baru bisa diminta setelah hasil order diselesaikan.',
+                ], 422);
+            }
+
+            if ((int) $order->revision_count >= 3) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Batas maksimal revisi adalah 3 kali.',
+                ], 422);
+            }
+        }
+
         if ($order->type === 'design'
             && $request->input('status') === 'completed'
             && $order->payment_status !== 'paid') {
@@ -169,7 +200,12 @@ class OrderController extends Controller
         $oldStatus = $order->status;
         $oldProgress = $order->progress;
 
-        if ($request->has('status'))   $order->status   = $request->status;
+        if ($request->has('status')) {
+            if ($request->status === 'revision') {
+                $order->revision_count = (int) $order->revision_count + 1;
+            }
+            $order->status = $request->status;
+        }
         if ($request->has('progress')) $order->progress = $request->progress;
         $order->save();
 

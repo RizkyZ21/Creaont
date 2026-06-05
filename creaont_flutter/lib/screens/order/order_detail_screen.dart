@@ -276,6 +276,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     final price   = order!['total_price'] ?? 0;
     final deadline= order!['deadline'];
     final rawType = order!['portfolio']?['raw_file_type'];
+    final revisionCount = _revisionCount;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -296,6 +297,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         _row('Harga',    'Rp ${_fmt(price)}'),
         if (deadline != null)
           _row('Deadline', deadline.toString().split('T')[0]),
+        if (order!['type'] == 'service')
+          _row('Revisi', '$revisionCount/3 kali'),
         if (rawType != null) ...[
           const SizedBox(height: 6),
           Row(children: [
@@ -668,13 +671,42 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
 
   Widget _customerActions() {
     final status = order!['status'];
+    final hasDelivery = order!['latest_design_file'] != null;
+    final canRequestRevision =
+        status == 'completed' && hasDelivery && _revisionCount < 3;
+    final revisionLimitReached =
+        status == 'completed' && hasDelivery && _revisionCount >= 3;
+
     return Column(children: [
-      if (status == 'in_progress')
-        _btn('Minta Revisi', Colors.orange, () => _updateStatus('revision')),
-      if (status == 'in_progress' || status == 'revision')
+      if ((status == 'in_progress' || status == 'revision') && hasDelivery)
+        _btn('Selesaikan Order', Colors.green, () => _updateStatus('completed')),
+      if (canRequestRevision)
         Padding(
-          padding: const EdgeInsets.only(top: 8),
-          child: _btn('Selesaikan Order', Colors.green, () => _updateStatus('completed')),
+          padding: EdgeInsets.only(
+            top: (status == 'in_progress' || status == 'revision') && hasDelivery
+                ? 8
+                : 0,
+          ),
+          child: _btn(
+            'Minta Revisi (${_revisionCount + 1}/3)',
+            Colors.orange,
+            () => _updateStatus('revision'),
+          ),
+        ),
+      if (revisionLimitReached)
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Colors.orange.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
+          ),
+          child: const Text(
+            'Batas revisi 3 kali sudah terpakai.',
+            style: TextStyle(color: Colors.orangeAccent),
+            textAlign: TextAlign.center,
+          ),
         ),
       if (status == 'pending')
         Padding(
@@ -690,6 +722,13 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
     return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
   }
+
+  int get _revisionCount {
+    final value = order?['revision_count'];
+    if (value is int) return value;
+    return int.tryParse(value?.toString() ?? '') ?? 0;
+  }
+
   Widget _btn(String label, Color color, VoidCallback onTap) => SizedBox(
     width: double.infinity,
     child: ElevatedButton(
