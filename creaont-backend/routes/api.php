@@ -9,6 +9,7 @@ use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\DesignerRecommendationController;
 
 // ── Public ───────────────────────────────────────────────────────────
 Route::post('/login',    [AuthController::class, 'login']);
@@ -20,6 +21,7 @@ Route::get('/portfolios/designer/{designerId}', [PortfolioController::class, 'by
 Route::get('/portfolios/{id}/reviews',          [ReviewController::class, 'byPortfolio']);
 Route::get('/services',                         [PortfolioController::class, 'services']);
 Route::get('/categories',                       [PortfolioController::class, 'categories']);
+Route::get('/designer-recommendations',         [DesignerRecommendationController::class, 'index']);
 
 // ── Protected ─────────────────────────────────────────────────────────
 Route::middleware('auth:sanctum')->group(function () {

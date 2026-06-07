@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../services/portfolio/portfolio_service.dart';
 import '../../services/core/api_service.dart';
+import 'designer_recommendation_screen.dart';
 import '../order/service_option_screen.dart';
 
 class ExploreTab extends StatefulWidget {
@@ -103,33 +104,70 @@ class _ExploreTabState extends State<ExploreTab> {
           children: [
             Padding(
               padding: const EdgeInsets.all(16),
-              child: TextField(
-                controller: _searchCtrl,
-                style: const TextStyle(color: Colors.white),
-                textInputAction: TextInputAction.search,
-                decoration: InputDecoration(
-                  hintText: 'Cari jasa desainer atau kategori...',
-                  hintStyle: const TextStyle(color: Colors.white38),
-                  prefixIcon: const Icon(Icons.search, color: Colors.white38),
-                  suffixIcon: _searchCtrl.text.isNotEmpty
-                      ? IconButton(
-                          icon: const Icon(Icons.clear, color: Colors.white38),
-                          onPressed: () {
-                            _searchCtrl.clear();
-                            setState(() {});
-                            _load();
-                          },
-                        )
-                      : null,
-                  filled: true,
-                  fillColor: Colors.white10,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: BorderSide.none,
+              child: Column(
+                children: [
+                  TextField(
+                    controller: _searchCtrl,
+                    style: const TextStyle(color: Colors.white),
+                    textInputAction: TextInputAction.search,
+                    decoration: InputDecoration(
+                      hintText: 'Cari jasa desainer atau kategori...',
+                      hintStyle: const TextStyle(color: Colors.white38),
+                      prefixIcon: const Icon(
+                        Icons.search,
+                        color: Colors.white38,
+                      ),
+                      suffixIcon: _searchCtrl.text.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(
+                                Icons.clear,
+                                color: Colors.white38,
+                              ),
+                              onPressed: () {
+                                _searchCtrl.clear();
+                                setState(() {});
+                                _load();
+                              },
+                            )
+                          : null,
+                      filled: true,
+                      fillColor: Colors.white10,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                    onChanged: _onSearchChanged,
+                    onSubmitted: (_) => _load(),
                   ),
-                ),
-                onChanged: _onSearchChanged,
-                onSubmitted: (_) => _load(),
+                  const SizedBox(height: 10),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 46,
+                    child: OutlinedButton.icon(
+                      icon: const Icon(Icons.psychology_alt),
+                      label: const Text('Cari Rekomendasi Designer'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.lightBlueAccent,
+                        side: BorderSide(
+                          color: Colors.lightBlueAccent.withValues(alpha: 0.45),
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                      ),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                const DesignerRecommendationScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
               ),
             ),
 

@@ -61,6 +61,30 @@ class PortfolioService {
     }
   }
 
+  static Future<Map<String, dynamic>> getDesignerRecommendations({
+    String? category,
+    double? budget,
+    int? deadlineDays,
+    String? brief,
+    int limit = 10,
+  }) async {
+    try {
+      final uri = Uri.parse(ApiService.designerRecommendationsUrl).replace(
+        queryParameters: {
+          if (category != null && category != 'All') 'category': category,
+          if (budget != null && budget > 0) 'budget': budget.toString(),
+          if (deadlineDays != null && deadlineDays > 0)
+            'deadline_days': deadlineDays.toString(),
+          if (brief != null && brief.trim().isNotEmpty) 'brief': brief.trim(),
+          'limit': limit.toString(),
+        },
+      );
+      return _parse(await http.get(uri, headers: ApiService.headers()));
+    } catch (e) {
+      return {'success': false, 'message': 'Koneksi gagal: $e'};
+    }
+  }
+
   // ── Portfolio populer ─────────────────────────────────────────────
   static Future<Map<String, dynamic>> getPopularPortfolios({
     String? category,

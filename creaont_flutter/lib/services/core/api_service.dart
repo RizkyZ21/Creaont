@@ -32,6 +32,8 @@ class ApiService {
   static String get portfolioPopularUrl => '$baseUrl/portfolios/popular';
   static String get servicesUrl => '$baseUrl/services';
   static String get categoriesUrl => '$baseUrl/categories';
+  static String get designerRecommendationsUrl =>
+      '$baseUrl/designer-recommendations';
   static String get myPortfoliosUrl => '$baseUrl/my-portfolios';
   static String portfolioDetailUrl(int id) => '$baseUrl/portfolios/$id';
   static String portfolioByDesigner(int id) =>
