@@ -12,14 +12,11 @@ class ChatTab extends StatefulWidget {
 
 class _ChatTabState extends State<ChatTab> {
   final _searchCtrl = TextEditingController();
-  // Grouped conversations: key = "userId_type" (e.g. "12_design")
-  // value = list semua order yang masuk ke group itu (ambil yang terbaru)
-  List<_ConvThread> threads = [];
+  List<_ConvThread> threads         = [];
   List<_ConvThread> filteredThreads = [];
   bool isLoading = true;
-  String token = '';
-  String role = '';
-  int myUserId = 0;
+  String token   = '';
+  int myUserId   = 0;
 
   @override
   void initState() {
@@ -35,9 +32,8 @@ class _ChatTabState extends State<ChatTab> {
 
   Future<void> _init() async {
     final prefs = await SharedPreferences.getInstance();
-    token    = prefs.getString('token') ?? '';
-    role     = prefs.getString('role') ?? 'customer';
-    myUserId = prefs.getInt('user_id') ?? 0;
+    token    = prefs.getString('token')  ?? '';
+    myUserId = prefs.getInt('user_id')   ?? 0;
     await _load();
   }
 
@@ -52,31 +48,38 @@ class _ChatTabState extends State<ChatTab> {
             .toList()
         : <dynamic>[];
 
-    // ── Group logic ─────────────────────────────────────────────────
-    // Key: "<other_user_id>_<type>"  (type = design | service)
-    // Setiap key maks tampil 1 thread (chat gabungan), ambil order terbaru
-    // sebagai representatif title & status.
     final Map<String, _ConvThread> map = {};
 
     for (final o in rawOrders) {
-      final otherId = role == 'designer'
-          ? (o['customer']?['id'] ?? 0)
-          : (o['designer']?['id'] ?? 0);
-      final otherName = role == 'designer'
-          ? (o['customer']?['name'] ?? 'User')
-          : (o['designer']?['name'] ?? 'User');
+      final customerId   = o['customer']?['id'] ?? 0;
+      final designerId   = o['designer']?['id'] ?? 0;
+
+      final int    otherId;
+      final String otherName;
+      final String myRoleInOrder;
+
+      if (customerId == myUserId) {
+        myRoleInOrder = 'customer';
+        otherId   = designerId;
+        otherName = o['designer']?['name'] ?? 'Designer';
+      } else {
+        myRoleInOrder = 'designer';
+        otherId   = customerId;
+        otherName = o['customer']?['name'] ?? 'Customer';
+      }
+
       final type = (o['type'] ?? 'design') as String;
-      final key = '${otherId}_$type';
+      final key  = '${otherId}_$type';
 
       if (!map.containsKey(key)) {
         map[key] = _ConvThread(
-          key: key,
-          otherUserId: otherId,
-          otherName: otherName,
-          type: type,
-          // representatif order = yang paling baru (list sudah latest())
-          latestOrder: o,
-          orderIds: [],
+          key:          key,
+          otherUserId:  otherId,
+          otherName:    otherName,
+          type:         type,
+          latestOrder:  o,
+          orderIds:     [],
+          myRoleInLatestOrder: myRoleInOrder,
         );
       }
       map[key]!.orderIds.add(o['id'] as int);
@@ -85,8 +88,8 @@ class _ChatTabState extends State<ChatTab> {
     final built = map.values.toList();
 
     setState(() {
-      isLoading = false;
-      threads = built;
+      isLoading       = false;
+      threads         = built;
       filteredThreads = built;
     });
   }
@@ -112,25 +115,17 @@ class _ChatTabState extends State<ChatTab> {
       body: SafeArea(
         child: Column(
           children: [
-            // Header
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    'Messages',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  _circleIcon(Icons.more_vert),
+                  const Text('Messages', style: TextStyle(
+                    color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold)),
+                  _circleIcon(Icons.refresh, _load),
                 ],
               ),
             ),
-            // Search
             Padding(
               padding: const EdgeInsets.all(16),
               child: TextField(
@@ -140,17 +135,11 @@ class _ChatTabState extends State<ChatTab> {
                 decoration: InputDecoration(
                   hintText: 'Cari percakapan...',
                   hintStyle: const TextStyle(color: Colors.white54),
-                  prefixIcon:
-                      const Icon(Icons.search, color: Colors.white54),
+                  prefixIcon: const Icon(Icons.search, color: Colors.white54),
                   suffixIcon: _searchCtrl.text.isNotEmpty
                       ? IconButton(
-                          icon: const Icon(Icons.clear,
-                              color: Colors.white38),
-                          onPressed: () {
-                            _searchCtrl.clear();
-                            _search('');
-                          },
-                        )
+                          icon: const Icon(Icons.clear, color: Colors.white38),
+                          onPressed: () { _searchCtrl.clear(); _search(''); })
                       : null,
                   filled: true,
                   fillColor: const Color(0xFF0D1F3C),
@@ -161,29 +150,20 @@ class _ChatTabState extends State<ChatTab> {
                 ),
               ),
             ),
-
-            // List
             Expanded(
               child: isLoading
-                  ? const Center(
-                      child: CircularProgressIndicator(
-                          color: Colors.lightBlueAccent))
+                  ? const Center(child: CircularProgressIndicator(color: Colors.lightBlueAccent))
                   : filteredThreads.isEmpty
-                      ? const Center(
-                          child: Text(
-                            'Belum ada percakapan',
-                            style: TextStyle(color: Colors.white54),
-                          ),
-                        )
+                      ? const Center(child: Text('Belum ada percakapan',
+                          style: TextStyle(color: Colors.white54)))
                       : RefreshIndicator(
                           onRefresh: _load,
                           child: ListView.builder(
                             itemCount: filteredThreads.length,
-                            itemBuilder: (_, i) =>
-                                _ThreadTile(
+                              itemBuilder: (_, i) => _ThreadTile(
                               thread: filteredThreads[i],
-                              role: role,
                               token: token,
+                              myUserId: myUserId,
                             ),
                           ),
                         ),
@@ -194,24 +174,25 @@ class _ChatTabState extends State<ChatTab> {
     );
   }
 
-  Widget _circleIcon(IconData icon) => Container(
-        padding: const EdgeInsets.all(8),
-        decoration: const BoxDecoration(
-          color: Color(0xFF0D1F3C),
-          shape: BoxShape.circle,
-        ),
-        child: Icon(icon, color: Colors.white),
-      );
+  Widget _circleIcon(IconData icon, VoidCallback onTap) => GestureDetector(
+    onTap: onTap,
+    child: Container(
+      padding: const EdgeInsets.all(8),
+      decoration: const BoxDecoration(color: Color(0xFF0D1F3C), shape: BoxShape.circle),
+      child: Icon(icon, color: Colors.white),
+    ),
+  );
 }
 
-// ── Data class untuk 1 thread conversation ────────────────────────────
+// ── Data class ─────────────────────────────────────────────────────────
 class _ConvThread {
   final String key;
-  final int otherUserId;
+  final int    otherUserId;
   final String otherName;
-  final String type; // 'design' | 'service'
+  final String type;
   final dynamic latestOrder;
   final List<int> orderIds;
+  final String myRoleInLatestOrder;
 
   _ConvThread({
     required this.key,
@@ -220,46 +201,49 @@ class _ConvThread {
     required this.type,
     required this.latestOrder,
     required this.orderIds,
+    required this.myRoleInLatestOrder,
   });
 }
 
-// ── Tile widget per thread ────────────────────────────────────────────
+// ── Tile widget ────────────────────────────────────────────────────────
 class _ThreadTile extends StatelessWidget {
   final _ConvThread thread;
-  final String role;
   final String token;
+  final int myUserId;
 
   const _ThreadTile({
+    super.key,
     required this.thread,
-    required this.role,
     required this.token,
+    required this.myUserId,
   });
 
   @override
   Widget build(BuildContext context) {
-    final order = thread.latestOrder;
-    final status = order['status'] as String? ?? '';
-    final portfolioTitle =
-        order['portfolio']?['title'] ?? 'Order';
-    final isService = thread.type == 'service';
-    final orderCount = thread.orderIds.length;
+    final order          = thread.latestOrder;
+    final status         = order['status'] as String? ?? '';
+    final portfolioTitle = order['portfolio']?['title'] ?? 'Order';
+    final isService      = thread.type == 'service';
+    final orderCount     = thread.orderIds.length;
 
     return GestureDetector(
-      onTap: () => Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => ChatRoomScreen(
-            // Kirim orderId yang paling representatif (terbaru)
-            orderId: order['id'] as int,
-            otherName: thread.otherName,
-            orderTitle: isService ? '🎨 Jasa — $portfolioTitle' : '📦 Desain Jadi',
-            token: token,
-            myRole: role,
-            // Pass semua orderIds supaya ChatRoom bisa load semua chat
-            groupOrderIds: thread.orderIds,
-          ),
+      onTap: () => Navigator.push(context, MaterialPageRoute(
+        builder: (_) => ChatRoomScreen(
+          orderId: order['id'] as int,
+          otherName: thread.otherName,
+          orderTitle:
+              isService
+                  ? 'Jasa — $portfolioTitle'
+                  : 'Desain Jadi',
+          token: token,
+
+          myRole: thread.myRoleInLatestOrder,
+
+          myUserId: myUserId,
+
+          groupOrderIds: thread.orderIds,
         ),
-      ),
+      )),
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
         padding: const EdgeInsets.all(14),
@@ -269,7 +253,7 @@ class _ThreadTile extends StatelessWidget {
         ),
         child: Row(
           children: [
-            // Avatar
+            // Avatar + badge jumlah order
             Stack(
               children: [
                 CircleAvatar(
@@ -278,33 +262,22 @@ class _ThreadTile extends StatelessWidget {
                       : const Color(0xFF0288D1).withValues(alpha: 0.6),
                   child: Text(
                     thread.otherName.isNotEmpty
-                        ? thread.otherName[0].toUpperCase()
-                        : '?',
-                    style: const TextStyle(
-                        color: Colors.white, fontWeight: FontWeight.bold),
+                        ? thread.otherName[0].toUpperCase() : '?',
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                   ),
                 ),
-                // Badge jumlah order jika > 1
                 if (orderCount > 1)
                   Positioned(
-                    right: 0,
-                    bottom: 0,
+                    right: 0, bottom: 0,
                     child: Container(
-                      width: 16,
-                      height: 16,
+                      width: 16, height: 16,
                       decoration: BoxDecoration(
                         color: Colors.lightBlueAccent,
                         shape: BoxShape.circle,
-                        border: Border.all(
-                            color: const Color(0xFF0D1F3C), width: 1.5),
+                        border: Border.all(color: const Color(0xFF0D1F3C), width: 1.5),
                       ),
-                      child: Center(
-                        child: Text(
-                          '$orderCount',
-                          style: const TextStyle(
-                              color: Colors.white, fontSize: 9),
-                        ),
-                      ),
+                      child: Center(child: Text('$orderCount',
+                          style: const TextStyle(color: Colors.white, fontSize: 9))),
                     ),
                   ),
               ],
@@ -316,20 +289,38 @@ class _ThreadTile extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    thread.otherName,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
                   Row(
                     children: [
-                      // Type chip
+                      Expanded(
+                        child: Text(thread.otherName,
+                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                      ),
+                      // Label kecil: saya sebagai apa di thread ini
                       Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 6, vertical: 1),
+                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                        decoration: BoxDecoration(
+                          color: (thread.myRoleInLatestOrder == 'customer'
+                              ? Colors.amber
+                              : Colors.lightBlueAccent).withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                        child: Text(
+                          thread.myRoleInLatestOrder == 'customer' ? 'Pembeli' : 'Designer',
+                          style: TextStyle(
+                            color: thread.myRoleInLatestOrder == 'customer'
+                                ? Colors.amber
+                                : Colors.lightBlueAccent,
+                            fontSize: 9,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 3),
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
                         decoration: BoxDecoration(
                           color: isService
                               ? Colors.blue.withValues(alpha: 0.2)
@@ -339,9 +330,7 @@ class _ThreadTile extends StatelessWidget {
                         child: Text(
                           isService ? 'Jasa' : 'Desain Jadi',
                           style: TextStyle(
-                            color: isService
-                                ? Colors.blueAccent
-                                : Colors.lightBlueAccent,
+                            color: isService ? Colors.blueAccent : Colors.lightBlueAccent,
                             fontSize: 10,
                           ),
                         ),
@@ -349,13 +338,10 @@ class _ThreadTile extends StatelessWidget {
                       const SizedBox(width: 6),
                       Expanded(
                         child: Text(
-                          orderCount > 1
-                              ? '$orderCount order'
-                              : portfolioTitle,
+                          orderCount > 1 ? '$orderCount order' : portfolioTitle,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                              color: Colors.white54, fontSize: 12),
+                          style: const TextStyle(color: Colors.white54, fontSize: 12),
                         ),
                       ),
                     ],
@@ -363,21 +349,17 @@ class _ThreadTile extends StatelessWidget {
                 ],
               ),
             ),
+            const SizedBox(width: 8),
 
             // Status badge
             Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color:
-                    _statusColor(status).withValues(alpha: 0.15),
+                color: _statusColor(status).withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Text(
-                _statusLabel(status),
-                style: TextStyle(
-                    color: _statusColor(status), fontSize: 11),
-              ),
+              child: Text(_statusLabel(status),
+                  style: TextStyle(color: _statusColor(status), fontSize: 11)),
             ),
           ],
         ),
@@ -385,7 +367,7 @@ class _ThreadTile extends StatelessWidget {
     );
   }
 
-  Color _statusColor(String s) {
+  Color  _statusColor(String s) {
     switch (s) {
       case 'in_progress': return Colors.blue;
       case 'completed':   return Colors.green;

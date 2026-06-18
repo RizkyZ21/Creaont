@@ -16,7 +16,8 @@ class _OrdersTabState extends State<OrdersTab> {
   List<dynamic> allOrders = [];
   bool isLoading = true;
   String token = '';
-  String role  = '';
+  String role = '';
+  int myUserId = 0;
 
   @override
   void initState() {
@@ -26,8 +27,9 @@ class _OrdersTabState extends State<OrdersTab> {
 
   Future<void> _init() async {
     final prefs = await SharedPreferences.getInstance();
-    token = prefs.getString('token') ?? '';
-    role  = prefs.getString('role') ?? 'customer';
+    token    = prefs.getString('token') ?? '';
+    role     = prefs.getString('role') ?? 'customer';
+    myUserId = prefs.getInt('user_id') ?? 0;
     await _load();
   }
 
@@ -44,9 +46,9 @@ class _OrdersTabState extends State<OrdersTab> {
 
   List<dynamic> get _filtered {
     switch (selectedTab) {
-      case 0: return allOrders.where((o) => ['pending','in_progress','revision'].contains(o['status'])).toList();
-      case 1: return allOrders.where((o) => o['status'] == 'completed').toList();
-      case 2: return allOrders.where((o) => o['status'] == 'cancelled').toList();
+      case 0:  return allOrders.where((o) => ['pending', 'in_progress', 'revision'].contains(o['status'])).toList();
+      case 1:  return allOrders.where((o) => o['status'] == 'completed').toList();
+      case 2:  return allOrders.where((o) => o['status'] == 'cancelled').toList();
       default: return [];
     }
   }
@@ -111,7 +113,7 @@ class _OrdersTabState extends State<OrdersTab> {
                             itemCount: _filtered.length,
                             itemBuilder: (_, i) => _OrderCard(
                               order: _filtered[i],
-                              role: role,
+                              myUserId: myUserId,
                               token: token,
                               onRefresh: _load,
                             ),
@@ -136,29 +138,47 @@ class _OrdersTabState extends State<OrdersTab> {
 
 class _OrderCard extends StatelessWidget {
   final Map<String, dynamic> order;
-  final String role;
+  final int myUserId;
   final String token;
   final VoidCallback onRefresh;
 
-  const _OrderCard({required this.order, required this.role, required this.token, required this.onRefresh});
+  const _OrderCard({
+    required this.order,
+    required this.myUserId,
+    required this.token,
+    required this.onRefresh,
+  });
+
+  // Tentukan role saya di order ini berdasarkan user ID, bukan role akun global
+  String get _myRoleInOrder {
+    final customerId = order['customer']?['id'] ?? order['customer_id'];
+    return (customerId != null && customerId == myUserId) ? 'customer' : 'designer';
+  }
 
   @override
   Widget build(BuildContext context) {
-    final status   = order['status'] ?? '';
-    final title    = order['portfolio']?['title'] ?? 'Order #${order['id']}';
+    final status      = order['status'] ?? '';
+    final title       = order['portfolio']?['title'] ?? 'Order #${order['id']}';
     final customerMap = order['customer'] as Map?;
     final designerMap = order['designer'] as Map?;
-    final dynamic other;
-    if (role == 'designer') {
-      other = customerMap != null ? customerMap['name'] : null;
+
+    // Tampilkan nama "pihak lain" berdasarkan peran saya di order ini
+    final String? otherName;
+    if (_myRoleInOrder == 'designer') {
+      otherName = customerMap != null ? customerMap['name'] as String? : null;
     } else {
-      other = designerMap != null ? designerMap['name'] : null;
+      otherName = designerMap != null ? designerMap['name'] as String? : null;
     }
+
     final progress = (order['progress'] ?? 0) as int;
 
     return GestureDetector(
       onTap: () => Navigator.push(context, MaterialPageRoute(
-        builder: (_) => OrderDetailScreen(orderId: order['id'], token: token, role: role),
+        builder: (_) => OrderDetailScreen(
+          orderId: order['id'],
+          token: token,
+          myUserId: myUserId,
+        ),
       )).then((_) => onRefresh()),
       child: Container(
         margin: const EdgeInsets.only(bottom: 14),
@@ -177,10 +197,24 @@ class _OrderCard extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Text(title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
-            if (other != null) ...[
+            if (otherName != null) ...[
               const SizedBox(height: 2),
-              Text('${role == 'designer' ? 'Customer' : 'by'}: $other',
-                  style: const TextStyle(color: Colors.white54, fontSize: 13)),
+              Text(
+                '${_myRoleInOrder == 'designer' ? 'Customer' : 'by'}: $otherName',
+                style: const TextStyle(color: Colors.white54, fontSize: 13),
+              ),
+            ],
+            // Label kecil kalau desainer yang beli (sebagai customer)
+            if (_myRoleInOrder == 'customer') ...[
+              const SizedBox(height: 4),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: Colors.amber.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: const Text('Pembelianmu', style: TextStyle(color: Colors.amber, fontSize: 10)),
+              ),
             ],
             if (status == 'in_progress') ...[
               const SizedBox(height: 12),
@@ -213,7 +247,9 @@ class _OrderCard extends StatelessWidget {
     try {
       final d = DateTime.parse(raw).toLocal();
       return '${d.day} ${_months[d.month - 1]} ${d.year}';
-    } catch (_) { return '-'; }
+    } catch (_) {
+      return '-';
+    }
   }
 
   static const _months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -227,12 +263,12 @@ class _StatusBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     Color c; String label;
     switch (status) {
-      case 'pending':     c = Colors.orange;  label = 'Pending'; break;
-      case 'in_progress': c = Colors.blue;    label = 'In Progress'; break;
-      case 'revision':    c = Colors.yellow;  label = 'Revision'; break;
-      case 'completed':   c = Colors.green;   label = 'Completed'; break;
-      case 'cancelled':   c = Colors.red;     label = 'Cancelled'; break;
-      default:            c = Colors.grey;    label = status;
+      case 'pending':     c = Colors.orange; label = 'Pending';     break;
+      case 'in_progress': c = Colors.blue;   label = 'In Progress'; break;
+      case 'revision':    c = Colors.yellow; label = 'Revision';    break;
+      case 'completed':   c = Colors.green;  label = 'Completed';   break;
+      case 'cancelled':   c = Colors.red;    label = 'Cancelled';   break;
+      default:            c = Colors.grey;   label = status;
     }
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),

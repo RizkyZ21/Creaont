@@ -1,3 +1,5 @@
+// PATH: creaont_flutter/lib/screens/payment/payment_status_screen.dart
+
 import 'package:flutter/material.dart';
 import '../home/home_page.dart';
 import '../order/order_detail_screen.dart';
@@ -6,9 +8,12 @@ class PaymentStatusScreen extends StatelessWidget {
   final String title;
   final String price;
   final String method;
-  final int? orderId;
+  final int?   orderId;
   final String token;
   final String initialStatus; // 'paid' | 'failed' | 'pending'
+  // FIXED: tambah myUserId supaya OrderDetailScreen bisa tentukan role
+  // berdasarkan customer_id vs myUserId, bukan dari string role hardcoded 'customer'
+  final int myUserId;
 
   const PaymentStatusScreen({
     super.key,
@@ -18,6 +23,7 @@ class PaymentStatusScreen extends StatelessWidget {
     this.orderId,
     this.token = '',
     this.initialStatus = 'paid',
+    this.myUserId = 0,
   });
 
   @override
@@ -112,14 +118,16 @@ class PaymentStatusScreen extends StatelessWidget {
                     child: ElevatedButton.icon(
                       icon: const Icon(Icons.receipt_long),
                       label: const Text('Lihat Detail Order',
-                          style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                          style: TextStyle(
+                              fontSize: 15, fontWeight: FontWeight.bold)),
                       onPressed: () => Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(
                           builder: (_) => OrderDetailScreen(
-                            orderId: orderId!,
-                            token:   token,
-                            role:    'customer',
+                            orderId:  orderId!,
+                            token:    token,
+                            // FIXED: pakai myUserId, bukan hardcoded role: 'customer'
+                            myUserId: myUserId,
                           ),
                         ),
                       ),
@@ -167,7 +175,8 @@ class PaymentStatusScreen extends StatelessWidget {
       children: [
         Text(label, style: const TextStyle(color: Colors.white54)),
         Text(value,
-            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            style: const TextStyle(
+                color: Colors.white, fontWeight: FontWeight.bold)),
       ],
     ),
   );

@@ -55,15 +55,29 @@ class _PortfolioScreenState extends State<PortfolioScreen>
   List<dynamic> get _jasa =>
       allPortfolios.where((p) => p['type'] == 'service').toList();
 
+  /// Buka upload dengan type otomatis sesuai tab aktif
+  Future<void> _openUpload() async {
+    final currentTab = _tabController.index;
+    final initialType = currentTab == 0 ? 'design' : 'service';
+
+    final added = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => UploadDesignScreen(
+          token: token,
+          initialType: initialType,
+        ),
+      ),
+    );
+    if (added == true) _load();
+  }
+
   Future<void> _delete(int id) async {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
         backgroundColor: const Color(0xFF0D1F3C),
-        title: const Text(
-          'Hapus Portfolio',
-          style: TextStyle(color: Colors.white),
-        ),
+        title: const Text('Hapus Portfolio', style: TextStyle(color: Colors.white)),
         content: const Text(
           'Yakin ingin menghapus portfolio ini?',
           style: TextStyle(color: Colors.white70),
@@ -99,10 +113,7 @@ class _PortfolioScreenState extends State<PortfolioScreen>
     return Scaffold(
       backgroundColor: const Color(0xFF0A1628),
       appBar: AppBar(
-        title: const Text(
-          'Portfolio Saya',
-          style: TextStyle(color: Colors.white),
-        ),
+        title: const Text('Portfolio Saya', style: TextStyle(color: Colors.white)),
         backgroundColor: const Color(0xFF0A1628),
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
@@ -143,18 +154,17 @@ class _PortfolioScreenState extends State<PortfolioScreen>
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: const Color(0xFF0288D1),
-        icon: const Icon(Icons.add),
-        label: const Text('Tambah'),
-        onPressed: () async {
-          final added = await Navigator.push<bool>(
-            context,
-            MaterialPageRoute(
-              builder: (_) => UploadDesignScreen(token: token),
-            ),
+      // FAB label berubah sesuai tab aktif
+      floatingActionButton: AnimatedBuilder(
+        animation: _tabController,
+        builder: (context, _) {
+          final isJasaTab = _tabController.index == 1;
+          return FloatingActionButton.extended(
+            backgroundColor: const Color(0xFF0288D1),
+            icon: const Icon(Icons.add),
+            label: Text(isJasaTab ? 'Tambah Jasa' : 'Tambah Karya'),
+            onPressed: _openUpload,
           );
-          if (added == true) _load();
         },
       ),
       body: isLoading
@@ -277,125 +287,95 @@ class _PortfolioList extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                ClipRRect(
-                  borderRadius: const BorderRadius.horizontal(
-                    left: Radius.circular(16),
+                  ClipRRect(
+                    borderRadius: const BorderRadius.horizontal(left: Radius.circular(16)),
+                    child: imageUrl.isNotEmpty
+                        ? Image.network(
+                            imageUrl,
+                            width: 88,
+                            height: 88,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, e, __) => _placeholder(isService),
+                          )
+                        : _placeholder(isService),
                   ),
-                  child: imageUrl.isNotEmpty
-                      ? Image.network(
-                          imageUrl,
-                          width: 88,
-                          height: 88,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, e, __) =>
-                              _placeholder(isService),
-                        )
-                      : _placeholder(isService),
-                ),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                item['title'] ?? '-',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  item['title'] ?? '-',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
                               ),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 7,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: isService
-                                    ? Colors.blue.withValues(alpha: 0.2)
-                                    : Colors.green.withValues(alpha: 0.2),
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: Text(
-                                isService ? 'Jasa' : 'Karya',
-                                style: TextStyle(
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                                decoration: BoxDecoration(
                                   color: isService
-                                      ? Colors.blueAccent
-                                      : Colors.greenAccent,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.bold,
+                                      ? Colors.blue.withValues(alpha: 0.2)
+                                      : Colors.green.withValues(alpha: 0.2),
+                                  borderRadius: BorderRadius.circular(6),
                                 ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 3),
-                        Text(
-                          item['category'] ?? '-',
-                          style: const TextStyle(
-                            color: Colors.white54,
-                            fontSize: 12,
-                          ),
-                        ),
-                        const SizedBox(height: 3),
-                        Text(
-                          'Rp ${_fmt(item['price'])}',
-                          style: const TextStyle(
-                            color: Colors.lightBlueAccent,
-                            fontSize: 13,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            const Icon(
-                              Icons.shopping_bag_outlined,
-                              color: Colors.white38,
-                              size: 12,
-                            ),
-                            const SizedBox(width: 3),
-                            Text(
-                              '$ordersCount terjual',
-                              style: const TextStyle(
-                                color: Colors.white38,
-                                fontSize: 11,
-                              ),
-                            ),
-                            if (avgRating != null) ...[
-                              const SizedBox(width: 10),
-                              const Icon(
-                                Icons.star,
-                                color: Colors.amber,
-                                size: 12,
-                              ),
-                              const SizedBox(width: 3),
-                              Text(
-                                double.tryParse(avgRating.toString())
-                                        ?.toStringAsFixed(1) ??
-                                    '-',
-                                style: const TextStyle(
-                                  color: Colors.white38,
-                                  fontSize: 11,
+                                child: Text(
+                                  isService ? 'Jasa' : 'Karya',
+                                  style: TextStyle(
+                                    color: isService ? Colors.blueAccent : Colors.greenAccent,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                               ),
                             ],
-                          ],
-                        ),
-                      ],
+                          ),
+                          const SizedBox(height: 3),
+                          Text(
+                            item['category'] ?? '-',
+                            style: const TextStyle(color: Colors.white54, fontSize: 12),
+                          ),
+                          const SizedBox(height: 3),
+                          Text(
+                            'Rp ${_fmt(item['price'])}',
+                            style: const TextStyle(color: Colors.lightBlueAccent, fontSize: 13),
+                          ),
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              const Icon(Icons.shopping_bag_outlined, color: Colors.white38, size: 12),
+                              const SizedBox(width: 3),
+                              Text(
+                                '$ordersCount terjual',
+                                style: const TextStyle(color: Colors.white38, fontSize: 11),
+                              ),
+                              if (avgRating != null) ...[
+                                const SizedBox(width: 10),
+                                const Icon(Icons.star, color: Colors.amber, size: 12),
+                                const SizedBox(width: 3),
+                                Text(
+                                  double.tryParse(avgRating.toString())?.toStringAsFixed(1) ?? '-',
+                                  style: const TextStyle(color: Colors.white38, fontSize: 11),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
-                  onPressed: () => onDelete(item['id']),
-                ),
-              ],
+                  IconButton(
+                    icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
+                    onPressed: () => onDelete(item['id']),
+                  ),
+                ],
               ),
             ),
           );
@@ -416,8 +396,7 @@ class _PortfolioList extends StatelessWidget {
 
   String _fmt(dynamic price) {
     if (price == null) return '0';
-    final num p =
-        price is num ? price : double.tryParse(price.toString()) ?? 0;
+    final num p = price is num ? price : double.tryParse(price.toString()) ?? 0;
     return p
         .toStringAsFixed(0)
         .replaceAllMapped(

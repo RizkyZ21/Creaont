@@ -1,3 +1,5 @@
+// PATH: creaont_flutter/lib/screens/order/create_order_screen.dart
+
 import 'package:flutter/material.dart';
 import '../../services/order/order_service.dart';
 import 'invoice_screen.dart';
@@ -8,6 +10,8 @@ class CreateOrderScreen extends StatefulWidget {
   final int portfolioId;
   final String portfolioType;
   final String token;
+  // FIXED: tambah myUserId supaya diteruskan ke InvoiceScreen → PaymentStatusScreen → OrderDetailScreen
+  final int myUserId;
 
   const CreateOrderScreen({
     super.key,
@@ -16,6 +20,7 @@ class CreateOrderScreen extends StatefulWidget {
     required this.portfolioId,
     this.portfolioType = 'design',
     required this.token,
+    this.myUserId = 0,
   });
 
   @override
@@ -69,10 +74,11 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
         context,
         MaterialPageRoute(
           builder: (_) => InvoiceScreen(
-            title: widget.title,
-            price: widget.price,
-            orderId: order?['id'],
-            token: widget.token,
+            title:    widget.title,
+            price:    widget.price,
+            orderId:  order?['id'],
+            token:    widget.token,
+            myUserId: widget.myUserId,
           ),
         ),
       );

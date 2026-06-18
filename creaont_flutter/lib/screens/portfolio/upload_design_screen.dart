@@ -6,7 +6,17 @@ import '../../services/portfolio/portfolio_service.dart';
 
 class UploadDesignScreen extends StatefulWidget {
   final String token;
-  const UploadDesignScreen({super.key, required this.token});
+
+  /// Jika dibuka dari tab "Jasa" → 'service'
+  /// Jika dibuka dari tab "Karya" → 'design'
+  /// Jika null, user bisa pilih sendiri
+  final String? initialType;
+
+  const UploadDesignScreen({
+    super.key,
+    required this.token,
+    this.initialType,
+  });
 
   @override
   State<UploadDesignScreen> createState() => _UploadDesignScreenState();
@@ -17,14 +27,18 @@ class _UploadDesignScreenState extends State<UploadDesignScreen> {
   final _descCtrl = TextEditingController();
   final _priceCtrl = TextEditingController();
   String _category = 'UI/UX';
-  String _type = 'design';
+  late String _type;
+
+  /// true = type sudah ditentukan dari luar (tab), tidak bisa diubah user
+  late bool _typeLocked;
+
   bool _loading = false;
 
   // Thumbnail
   XFile? _imageXFile;
-  Uint8List? _imageBytes; // untuk preview di web
+  Uint8List? _imageBytes;
 
-  // Raw file
+  // Raw file (hanya untuk type=design)
   PlatformFile? _rawFile;
 
   List<String> categories = const [
@@ -39,6 +53,8 @@ class _UploadDesignScreenState extends State<UploadDesignScreen> {
   @override
   void initState() {
     super.initState();
+    _type       = widget.initialType ?? 'design';
+    _typeLocked = widget.initialType != null;
     _loadCategories();
   }
 
@@ -62,7 +78,7 @@ class _UploadDesignScreenState extends State<UploadDesignScreen> {
     });
   }
 
-  // ── Pick thumbnail dari galeri ─────────────────────────────────────
+  // ── Pick thumbnail ─────────────────────────────────────────────────
   Future<void> _pickImage() async {
     final picked = await ImagePicker().pickImage(
       source: ImageSource.gallery,
@@ -78,39 +94,24 @@ class _UploadDesignScreenState extends State<UploadDesignScreen> {
     });
   }
 
-  // ── Pick file raw (cdr, psd, ai, pdf, dll) ─────────────────────────
-  // Pakai FileType.any karena ekstensi desain (.cdr, .ai, .fig, dll)
-  // tidak dikenali MIME browser — FileType.custom akan diblokir.
+  // ── Pick raw file ──────────────────────────────────────────────────
   static const _allowedExt = [
-    'pdf',
-    'zip',
-    'ai',
-    'psd',
-    'cdr',
-    'fig',
-    'sketch',
-    'xd',
-    'svg',
-    'eps',
-    'indd',
-    'afdesign',
-    'afphoto',
-    'rar',
-    '7z',
+    'pdf', 'zip', 'ai', 'psd', 'cdr', 'fig',
+    'sketch', 'xd', 'svg', 'eps', 'indd',
+    'afdesign', 'afphoto', 'rar', '7z',
   ];
 
   Future<void> _pickRawFile() async {
     final result = await FilePicker.pickFiles(
       type: FileType.any,
-      withData: true, // wajib true agar bytes tersedia di web
+      withData: true,
       withReadStream: false,
     );
     if (result == null || result.files.isEmpty) return;
 
     final file = result.files.first;
-    final ext = (file.extension ?? '').toLowerCase();
+    final ext  = (file.extension ?? '').toLowerCase();
 
-    // Validasi ekstensi manual
     if (!_allowedExt.contains(ext)) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -127,7 +128,6 @@ class _UploadDesignScreenState extends State<UploadDesignScreen> {
       return;
     }
 
-    // Pastikan bytes berhasil diload
     if (file.bytes == null || file.bytes!.isEmpty) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -192,7 +192,6 @@ class _UploadDesignScreenState extends State<UploadDesignScreen> {
       _snack('Portfolio berhasil diunggah!', Colors.green);
       Navigator.pop(context, true);
     } else {
-      // Tampilkan error detail dari Laravel (termasuk validation errors)
       final errors = res['errors'];
       String msg = res['message'] ?? 'Upload gagal';
       if (errors is Map) {
@@ -207,9 +206,9 @@ class _UploadDesignScreenState extends State<UploadDesignScreen> {
   }
 
   void _snack(String msg, Color color) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(msg), backgroundColor: color));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(msg), backgroundColor: color),
+    );
   }
 
   @override
@@ -220,14 +219,20 @@ class _UploadDesignScreenState extends State<UploadDesignScreen> {
     super.dispose();
   }
 
+  // ── UI ─────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
+    final isDesign  = _type == 'design';
+    final typeLabel = isDesign ? 'Desain Jadi' : 'Sewa Jasa';
+    final typeIcon  = isDesign ? Icons.download_done : Icons.design_services;
+    final typeColor = isDesign ? Colors.greenAccent : Colors.lightBlueAccent;
+
     return Scaffold(
       backgroundColor: const Color(0xFF0A1628),
       appBar: AppBar(
-        title: const Text(
-          'Upload Portfolio',
-          style: TextStyle(color: Colors.white),
+        title: Text(
+          _typeLocked ? 'Upload $typeLabel' : 'Upload Portfolio',
+          style: const TextStyle(color: Colors.white),
         ),
         backgroundColor: const Color(0xFF0A1628),
         elevation: 0,
@@ -238,29 +243,58 @@ class _UploadDesignScreenState extends State<UploadDesignScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Thumbnail (wajib) ──────────────────────────────────
-            _sectionLabel('Jenis Portfolio', required: true),
-            Row(
-              children: [
-                Expanded(
-                  child: _typeButton(
-                    'design',
-                    'Desain Jadi',
-                    Icons.download_done,
-                  ),
+            // ── Jenis: terkunci (badge) atau bisa dipilih (toggle) ──
+            if (_typeLocked) ...[
+              _sectionLabel('Jenis Portfolio'),
+              const SizedBox(height: 6),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                decoration: BoxDecoration(
+                  color: typeColor.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: typeColor.withValues(alpha: 0.5)),
                 ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: _typeButton(
-                    'service',
-                    'Sewa Jasa',
-                    Icons.design_services,
-                  ),
+                child: Row(
+                  children: [
+                    Icon(typeIcon, color: typeColor, size: 20),
+                    const SizedBox(width: 10),
+                    Text(
+                      typeLabel,
+                      style: TextStyle(
+                        color: typeColor,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                      ),
+                    ),
+                    const Spacer(),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: typeColor.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        'Otomatis',
+                        style: TextStyle(color: typeColor, fontSize: 11),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ] else ...[
+              _sectionLabel('Jenis Portfolio', required: true),
+              Row(
+                children: [
+                  Expanded(child: _typeButton('design', 'Desain Jadi', Icons.download_done)),
+                  const SizedBox(width: 10),
+                  Expanded(child: _typeButton('service', 'Sewa Jasa', Icons.design_services)),
+                ],
+              ),
+            ],
             const SizedBox(height: 20),
 
+            // ── Thumbnail ────────────────────────────────────────────
             _sectionLabel('Thumbnail / Preview Karya', required: true),
             const SizedBox(height: 4),
             const Text(
@@ -288,7 +322,7 @@ class _UploadDesignScreenState extends State<UploadDesignScreen> {
                         children: const [
                           Icon(
                             Icons.add_photo_alternate,
-                            color: const Color(0xFF0288D1),
+                            color: Color(0xFF0288D1),
                             size: 48,
                           ),
                           SizedBox(height: 8),
@@ -299,10 +333,7 @@ class _UploadDesignScreenState extends State<UploadDesignScreen> {
                           SizedBox(height: 4),
                           Text(
                             'JPG / PNG / WEBP • Maks 4MB',
-                            style: TextStyle(
-                              color: Colors.white38,
-                              fontSize: 12,
-                            ),
+                            style: TextStyle(color: Colors.white38, fontSize: 12),
                           ),
                         ],
                       )
@@ -311,10 +342,7 @@ class _UploadDesignScreenState extends State<UploadDesignScreen> {
                         children: [
                           ClipRRect(
                             borderRadius: BorderRadius.circular(16),
-                            child: Image.memory(
-                              _imageBytes!,
-                              fit: BoxFit.cover,
-                            ),
+                            child: Image.memory(_imageBytes!, fit: BoxFit.cover),
                           ),
                           Positioned(
                             top: 8,
@@ -330,11 +358,7 @@ class _UploadDesignScreenState extends State<UploadDesignScreen> {
                                   color: Colors.black54,
                                   shape: BoxShape.circle,
                                 ),
-                                child: const Icon(
-                                  Icons.close,
-                                  color: Colors.white,
-                                  size: 16,
-                                ),
+                                child: const Icon(Icons.close, color: Colors.white, size: 16),
                               ),
                             ),
                           ),
@@ -342,29 +366,16 @@ class _UploadDesignScreenState extends State<UploadDesignScreen> {
                             bottom: 8,
                             right: 8,
                             child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 4,
-                              ),
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                               decoration: BoxDecoration(
                                 color: Colors.green.withValues(alpha: 0.8),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: const Row(
                                 children: [
-                                  Icon(
-                                    Icons.check,
-                                    color: Colors.white,
-                                    size: 12,
-                                  ),
+                                  Icon(Icons.check, color: Colors.white, size: 12),
                                   SizedBox(width: 4),
-                                  Text(
-                                    'Dipilih',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 11,
-                                    ),
-                                  ),
+                                  Text('Dipilih', style: TextStyle(color: Colors.white, fontSize: 11)),
                                 ],
                               ),
                             ),
@@ -375,7 +386,7 @@ class _UploadDesignScreenState extends State<UploadDesignScreen> {
             ),
             const SizedBox(height: 20),
 
-            // ── File Raw (hanya untuk type=design) ────────────────
+            // ── File Raw (hanya type=design) ──────────────────────────
             if (_type == 'design') ...[
               _sectionLabel('File Desain Asli (Raw)', required: true),
               const SizedBox(height: 4),
@@ -409,10 +420,7 @@ class _UploadDesignScreenState extends State<UploadDesignScreen> {
                                 children: [
                                   Text(
                                     'Upload File Raw',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                                   ),
                                   SizedBox(height: 2),
                                   Text(
@@ -464,7 +472,7 @@ class _UploadDesignScreenState extends State<UploadDesignScreen> {
               const SizedBox(height: 20),
             ],
 
-            // ── Info box (service: progress dikirim via order) ─────
+            // ── Info box ──────────────────────────────────────────────
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
@@ -490,21 +498,17 @@ class _UploadDesignScreenState extends State<UploadDesignScreen> {
             ),
             const SizedBox(height: 20),
 
-            // ── Judul ──────────────────────────────────────────────
+            // ── Judul ─────────────────────────────────────────────────
             _sectionLabel('Judul Karya', required: true),
             _field(_titleCtrl, 'Contoh: Logo Modern Minimalist'),
             const SizedBox(height: 16),
 
-            // ── Deskripsi ──────────────────────────────────────────
+            // ── Deskripsi ─────────────────────────────────────────────
             _sectionLabel('Deskripsi', required: true),
-            _field(
-              _descCtrl,
-              'Jelaskan karya ini secara detail...',
-              maxLines: 4,
-            ),
+            _field(_descCtrl, 'Jelaskan karya ini secara detail...', maxLines: 4),
             const SizedBox(height: 16),
 
-            // ── Kategori ───────────────────────────────────────────
+            // ── Kategori ──────────────────────────────────────────────
             _sectionLabel('Kategori', required: true),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -518,24 +522,18 @@ class _UploadDesignScreenState extends State<UploadDesignScreen> {
                 dropdownColor: const Color(0xFF0D1F3C),
                 style: const TextStyle(color: Colors.white),
                 underline: const SizedBox(),
-                items: categories
-                    .map((c) => DropdownMenuItem(value: c, child: Text(c)))
-                    .toList(),
+                items: categories.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
                 onChanged: (v) => setState(() => _category = v!),
               ),
             ),
             const SizedBox(height: 16),
 
-            // ── Harga ──────────────────────────────────────────────
+            // ── Harga ─────────────────────────────────────────────────
             _sectionLabel('Harga (Rp)', required: true),
-            _field(
-              _priceCtrl,
-              'Contoh: 250000',
-              keyboardType: TextInputType.number,
-            ),
+            _field(_priceCtrl, 'Contoh: 250000', keyboardType: TextInputType.number),
             const SizedBox(height: 32),
 
-            // ── Submit ─────────────────────────────────────────────
+            // ── Submit ────────────────────────────────────────────────
             SizedBox(
               width: double.infinity,
               height: 52,
@@ -552,17 +550,11 @@ class _UploadDesignScreenState extends State<UploadDesignScreen> {
                     ? const SizedBox(
                         width: 24,
                         height: 24,
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2,
-                        ),
+                        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
                       )
                     : const Text(
                         'Upload Portfolio',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                       ),
               ),
             ),
@@ -579,20 +571,10 @@ class _UploadDesignScreenState extends State<UploadDesignScreen> {
       children: [
         Text(
           text,
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w600,
-            fontSize: 14,
-          ),
+          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 14),
         ),
         if (required)
-          const Text(
-            ' *',
-            style: TextStyle(
-              color: Colors.redAccent,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+          const Text(' *', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
       ],
     ),
   );
@@ -607,22 +589,14 @@ class _UploadDesignScreenState extends State<UploadDesignScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 10),
         decoration: BoxDecoration(
-          color: active
-              ? const Color(0xFF0288D1).withValues(alpha: 0.25)
-              : Colors.white10,
+          color: active ? const Color(0xFF0288D1).withValues(alpha: 0.25) : Colors.white10,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: active ? Colors.lightBlueAccent : Colors.white12,
-          ),
+          border: Border.all(color: active ? Colors.lightBlueAccent : Colors.white12),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              icon,
-              color: active ? Colors.lightBlueAccent : Colors.white54,
-              size: 18,
-            ),
+            Icon(icon, color: active ? Colors.lightBlueAccent : Colors.white54, size: 18),
             const SizedBox(width: 8),
             Flexible(
               child: Text(
@@ -645,22 +619,23 @@ class _UploadDesignScreenState extends State<UploadDesignScreen> {
     String hint, {
     int maxLines = 1,
     TextInputType? keyboardType,
-  }) => TextField(
-    controller: ctrl,
-    maxLines: maxLines,
-    keyboardType: keyboardType,
-    style: const TextStyle(color: Colors.white),
-    decoration: InputDecoration(
-      hintText: hint,
-      hintStyle: const TextStyle(color: Colors.white38),
-      filled: true,
-      fillColor: Colors.white10,
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide.none,
-      ),
-    ),
-  );
+  }) =>
+      TextField(
+        controller: ctrl,
+        maxLines: maxLines,
+        keyboardType: keyboardType,
+        style: const TextStyle(color: Colors.white),
+        decoration: InputDecoration(
+          hintText: hint,
+          hintStyle: const TextStyle(color: Colors.white38),
+          filled: true,
+          fillColor: Colors.white10,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide.none,
+          ),
+        ),
+      );
 
   String _formatSize(int bytes) {
     if (bytes < 1024) return '$bytes B';

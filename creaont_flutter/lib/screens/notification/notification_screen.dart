@@ -1,3 +1,5 @@
+// PATH: creaont_flutter/lib/screens/notification/notification_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -124,9 +126,13 @@ class _NotificationScreenState extends State<NotificationScreen> {
     final orderId = notif.orderId;
     if (orderId == null) return;
 
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token') ?? '';
-    final role = prefs.getString('role') ?? 'customer';
+    final prefs    = await SharedPreferences.getInstance();
+    final token    = prefs.getString('token')  ?? '';
+    // FIXED: ambil myUserId untuk diteruskan ke layar anak,
+    // sehingga penentuan role di order tertentu dilakukan berdasarkan ID,
+    // bukan role global akun (yang salah saat desainer beli ke desainer lain).
+    final myUserId = prefs.getInt('user_id')   ?? 0;
+    final myRole   = prefs.getString('role')   ?? 'customer'; // tetap diperlukan untuk ChatRoomScreen.myRole
 
     if (!context.mounted) return;
 
@@ -136,11 +142,13 @@ class _NotificationScreenState extends State<NotificationScreen> {
           context,
           MaterialPageRoute(
             builder: (_) => ChatRoomScreen(
-              orderId: orderId,
+              orderId:   orderId,
               otherName: notif.data['sender_name']?.toString() ?? 'Chat',
               orderTitle: 'Order #$orderId',
-              token: token,
-              myRole: role,
+              token:     token,
+              myRole:    myRole,
+              // FIXED: pass myUserId agar isMe di bubble chat pakai sender.id
+              myUserId:  myUserId,
             ),
           ),
         );
@@ -151,8 +159,12 @@ class _NotificationScreenState extends State<NotificationScreen> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (_) =>
-                OrderDetailScreen(orderId: orderId, token: token, role: role),
+            // FIXED: OrderDetailScreen sekarang pakai myUserId, bukan role string
+            builder: (_) => OrderDetailScreen(
+              orderId:  orderId,
+              token:    token,
+              myUserId: myUserId,
+            ),
           ),
         );
         break;

@@ -10,26 +10,27 @@ class DesignerRecommendationController extends Controller
     public function index(Request $request, DesignerRecommendationService $service)
     {
         $criteria = $request->validate([
-            'category' => 'sometimes|nullable|string|max:100',
-            'budget' => 'sometimes|nullable|numeric|min:0',
+            'category'      => 'sometimes|nullable|string|max:100',
+            'budget'        => 'sometimes|nullable|numeric|min:0',
             'deadline_days' => 'sometimes|nullable|integer|min:1|max:365',
-            'brief' => 'sometimes|nullable|string|max:1000',
-            'limit' => 'sometimes|nullable|integer|min:1|max:30',
+            'brief'         => 'sometimes|nullable|string|max:1000',
+            'limit'         => 'sometimes|nullable|integer|min:1|max:30',
         ]);
 
         return response()->json([
             'success' => true,
-            'data' => $service->recommend($criteria),
-            'method' => [
-                'name' => 'Scoring + Rule-Based System',
+            'data'    => $service->recommend($criteria),
+            'method'  => [
+                'name'    => 'Weighted Scoring + Rule-Based Expert System',
                 'weights' => [
-                    'category' => 30,
-                    'budget' => 20,
-                    'deadline' => 15,
-                    'rating' => 20,
-                    'experience' => 10,
-                    'brief_keywords' => 10,
+                    'category'   => 25,
+                    'budget'     => 20,
+                    'rating'     => 20,
+                    'experience' => 15,
+                    'deadline'   => 12,
+                    'keyword'    => 8,
                 ],
+                'total' => 100,
             ],
         ]);
     }

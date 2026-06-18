@@ -1,3 +1,5 @@
+// PATH: creaont_flutter/lib/screens/order/service_option_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../services/review/review_service.dart';
@@ -221,12 +223,14 @@ class _ServiceOptionScreenState extends State<ServiceOptionScreen> {
                       : () => Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => CreateOrderScreen(
-                                title: widget.title,
-                                price: widget.price,
-                                portfolioId: widget.portfolioId,
+                            builder: (_) => CreateOrderScreen(
+                                title:         widget.title,
+                                price:         widget.price,
+                                portfolioId:   widget.portfolioId,
                                 portfolioType: widget.portfolioType,
-                                token: token,
+                                token:         token,
+                                // FIXED: teruskan myUserId agar mengalir sampai OrderDetailScreen
+                                myUserId:      myUserId,
                               ),
                             ),
                           ),

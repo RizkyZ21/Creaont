@@ -1,3 +1,5 @@
+// PATH: creaont_flutter/lib/screens/order/invoice_screen.dart
+
 import 'package:flutter/material.dart';
 import '../../services/payment/payment_service.dart';
 import '../payment/payment_status_screen.dart';
@@ -5,15 +7,19 @@ import '../payment/payment_status_screen.dart';
 class InvoiceScreen extends StatefulWidget {
   final String title;
   final String price;
-  final int? orderId;
+  final int?   orderId;
   final String token;
+  // FIXED: tambah myUserId supaya bisa diteruskan ke PaymentStatusScreen
+  // → OrderDetailScreen, agar role ditentukan dari ID bukan hardcoded string
+  final int myUserId;
 
   const InvoiceScreen({
     super.key,
     required this.title,
     required this.price,
     this.orderId,
-    this.token = '',
+    this.token    = '',
+    this.myUserId = 0,
   });
 
   @override
@@ -22,13 +28,13 @@ class InvoiceScreen extends StatefulWidget {
 
 class _InvoiceScreenState extends State<InvoiceScreen> {
   String _selectedMethod = 'QRIS';
-  bool _isLoading = false;
+  bool   _isLoading      = false;
 
   static const _methods = [
-    {'id': 'QRIS',          'label': 'QRIS',           'icon': Icons.qr_code,               'sub': 'Semua e-wallet & bank'},
-    {'id': 'DANA',          'label': 'DANA',            'icon': Icons.account_balance_wallet, 'sub': 'Bayar via DANA'},
-    {'id': 'GoPay',         'label': 'GoPay',           'icon': Icons.payment,               'sub': 'Bayar via GoPay'},
-    {'id': 'Transfer Bank', 'label': 'Transfer Bank',   'icon': Icons.account_balance,       'sub': 'BCA / Mandiri / BRI / BNI'},
+    {'id': 'QRIS',          'label': 'QRIS',          'icon': Icons.qr_code,               'sub': 'Semua e-wallet & bank'},
+    {'id': 'DANA',          'label': 'DANA',           'icon': Icons.account_balance_wallet, 'sub': 'Bayar via DANA'},
+    {'id': 'GoPay',         'label': 'GoPay',          'icon': Icons.payment,               'sub': 'Bayar via GoPay'},
+    {'id': 'Transfer Bank', 'label': 'Transfer Bank',  'icon': Icons.account_balance,       'sub': 'BCA / Mandiri / BRI / BNI'},
   ];
 
   Future<void> _pay() async {
@@ -39,7 +45,6 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
 
     setState(() => _isLoading = true);
 
-    // Panggil backend untuk mark order sebagai PAID
     final res = await PaymentService.createSnapToken(
       token:   widget.token,
       orderId: widget.orderId!,
@@ -48,8 +53,7 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
     if (!mounted) return;
     setState(() => _isLoading = false);
 
-    final paymentStatus = res['success'] == true ? 'paid' : 'failed';
-    _goToStatus(paymentStatus);
+    _goToStatus(res['success'] == true ? 'paid' : 'failed');
   }
 
   void _goToStatus(String status) {
@@ -63,6 +67,8 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
           orderId:       widget.orderId,
           token:         widget.token,
           initialStatus: status,
+          // FIXED: teruskan myUserId ke PaymentStatusScreen
+          myUserId:      widget.myUserId,
         ),
       ),
     );
@@ -101,38 +107,47 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
                             style: TextStyle(color: Colors.white70, fontSize: 13)),
                         const SizedBox(height: 10),
                         Text(widget.title,
-                            style: const TextStyle(color: Colors.white,
-                                fontWeight: FontWeight.bold, fontSize: 17)),
+                            style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 17)),
                         const SizedBox(height: 12),
                         const Divider(color: Colors.white12),
                         const SizedBox(height: 8),
-                        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text('Total Bayar',
-                                  style: TextStyle(color: Colors.white70)),
-                              Text(widget.price,
-                                  style: const TextStyle(color: Colors.lightBlueAccent,
-                                      fontWeight: FontWeight.bold, fontSize: 18)),
-                            ]),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text('Total Bayar',
+                                style: TextStyle(color: Colors.white70)),
+                            Text(widget.price,
+                                style: const TextStyle(
+                                    color: Colors.lightBlueAccent,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 18)),
+                          ],
+                        ),
                         if (widget.orderId != null) ...[
                           const SizedBox(height: 4),
                           Text('Order #${widget.orderId}',
-                              style: const TextStyle(color: Colors.white38, fontSize: 11)),
+                              style: const TextStyle(
+                                  color: Colors.white38, fontSize: 11)),
                         ],
                       ],
                     ),
                   ),
                   const SizedBox(height: 24),
                   const Text('Pilih Metode Pembayaran',
-                      style: TextStyle(color: Colors.white,
-                          fontWeight: FontWeight.bold, fontSize: 15)),
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15)),
                   const SizedBox(height: 12),
                   // Payment methods
                   ...(_methods.map((m) {
-                    final id     = m['id'] as String;
+                    final id     = m['id']    as String;
                     final label  = m['label'] as String;
-                    final icon   = m['icon'] as IconData;
-                    final sub    = m['sub'] as String;
+                    final icon   = m['icon']  as IconData;
+                    final sub    = m['sub']   as String;
                     final active = _selectedMethod == id;
                     return GestureDetector(
                       onTap: () => setState(() => _selectedMethod = id),
@@ -146,7 +161,8 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
                               : Colors.white10,
                           borderRadius: BorderRadius.circular(14),
                           border: Border.all(
-                            color: active ? Colors.lightBlueAccent : Colors.transparent,
+                            color:
+                                active ? Colors.lightBlueAccent : Colors.transparent,
                             width: 1.5,
                           ),
                         ),
@@ -160,20 +176,27 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: Icon(icon,
-                                color: active ? Colors.lightBlueAccent : Colors.white54,
+                                color: active
+                                    ? Colors.lightBlueAccent
+                                    : Colors.white54,
                                 size: 22),
                           ),
                           const SizedBox(width: 14),
-                          Expanded(child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(label, style: TextStyle(
-                                  color: active ? Colors.white : Colors.white70,
-                                  fontWeight: FontWeight.bold)),
-                              Text(sub, style: const TextStyle(
-                                  color: Colors.white38, fontSize: 11)),
-                            ],
-                          )),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(label,
+                                    style: TextStyle(
+                                        color:
+                                            active ? Colors.white : Colors.white70,
+                                        fontWeight: FontWeight.bold)),
+                                Text(sub,
+                                    style: const TextStyle(
+                                        color: Colors.white38, fontSize: 11)),
+                              ],
+                            ),
+                          ),
                           if (active)
                             const Icon(Icons.check_circle,
                                 color: Colors.lightBlueAccent, size: 20),
@@ -196,12 +219,15 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
                 onPressed: _isLoading ? null : _pay,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF0288D1),
-                  disabledBackgroundColor: const Color(0xFF0288D1).withValues(alpha: 0.4),
+                  disabledBackgroundColor:
+                      const Color(0xFF0288D1).withValues(alpha: 0.4),
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14)),
                 ),
                 child: _isLoading
-                    ? const SizedBox(width: 24, height: 24,
+                    ? const SizedBox(
+                        width: 24,
+                        height: 24,
                         child: CircularProgressIndicator(
                             color: Colors.white, strokeWidth: 2))
                     : Text('Bayar via $_selectedMethod',

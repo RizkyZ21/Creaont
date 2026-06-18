@@ -8,13 +8,15 @@ import '../../services/review/review_service.dart';
 class OrderDetailScreen extends StatefulWidget {
   final int orderId;
   final String token;
-  final String role;
+  // FIXED: pakai myUserId, bukan role string — supaya desainer yang beli
+  // bisa tampil sebagai customer di order yang ia beli
+  final int myUserId;
 
   const OrderDetailScreen({
     super.key,
     required this.orderId,
     required this.token,
-    required this.role,
+    required this.myUserId,
   });
 
   @override
@@ -23,16 +25,28 @@ class OrderDetailScreen extends StatefulWidget {
 
 class _OrderDetailScreenState extends State<OrderDetailScreen> {
   Map<String, dynamic>? order;
-  bool isLoading       = true;
-  bool isDownloading   = false;
-  // Review state
-  bool hasReviewed     = false;
+  bool isLoading         = true;
+  bool isDownloading     = false;
+  bool hasReviewed       = false;
   bool isSubmittingReview = false;
-  int  _selectedRating = 5;
-  final _commentCtrl   = TextEditingController();
-  // Upload file hasil jasa (designer)
+  int  _selectedRating   = 5;
+  final _commentCtrl     = TextEditingController();
   PlatformFile? _deliveryFile;
   bool _isUploading = false;
+
+  // Tentukan peran saya di order ini berdasarkan customer_id vs myUserId
+  // Bukan dari role akun global — sehingga desainer yang jadi pembeli
+  // akan mendapat tampilan & aksi sebagai customer.
+  String get _myRoleInOrder {
+    if (order == null) return 'customer';
+    final customerId = order!['customer']?['id'] ?? order!['customer_id'];
+    return (customerId != null && customerId == widget.myUserId)
+        ? 'customer'
+        : 'designer';
+  }
+
+  bool get _amDesigner => _myRoleInOrder == 'designer';
+  bool get _amCustomer => _myRoleInOrder == 'customer';
 
   @override
   void initState() {
@@ -56,8 +70,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         order     = res['success'] == true ? (res['data'] ?? res['order']) : null;
       });
     }
-    // Cek review status kalau customer & completed
-    if (widget.role != 'designer' && order?['status'] == 'completed') {
+    // Cek review hanya kalau saya sebagai customer & order sudah selesai
+    if (_amCustomer && order?['status'] == 'completed') {
       _checkReview();
     }
   }
@@ -89,10 +103,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   }
 
   Future<void> _pickDeliveryFile() async {
-    final result = await FilePicker.pickFiles(
-      type: FileType.any,
-      withData: true,
-    );
+    final result = await FilePicker.pickFiles(type: FileType.any, withData: true);
     if (result == null || result.files.isEmpty) return;
     final file = result.files.first;
     if (file.bytes == null || file.bytes!.isEmpty) {
@@ -120,22 +131,17 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       context: context,
       builder: (_) => AlertDialog(
         backgroundColor: const Color(0xFF0D1F3C),
-        title: const Text('Kirim Hasil Kerja',
-            style: TextStyle(color: Colors.white)),
+        title: const Text('Kirim Hasil Kerja', style: TextStyle(color: Colors.white)),
         content: Text(
           'Upload "${_deliveryFile!.name}" sebagai hasil jasa?\n\nOrder akan otomatis ditandai selesai.',
           style: const TextStyle(color: Colors.white70),
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Batal'),
-          ),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Batal')),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Upload & Selesai',
-                style: TextStyle(color: Colors.white)),
+            child: const Text('Upload & Selesai', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -211,11 +217,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   }
 
   bool get _canDownload {
-    final status = order?['status'];
+    final status     = order?['status'];
     final hasDelivery = order?['latest_design_file'] != null;
-    return widget.role != 'designer' &&
-        status == 'completed' &&
-        hasDelivery;
+    // Hanya customer (di order ini) yang boleh download
+    return _amCustomer && status == 'completed' && hasDelivery;
   }
 
   @override
@@ -248,16 +253,16 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                           const SizedBox(height: 16),
                           _downloadCard(),
                         ],
-                        if (widget.role == 'designer') ...[
+                        if (_amDesigner) ...[
                           const SizedBox(height: 16),
                           _designerActions(),
                         ],
-                        if (widget.role != 'designer') ...[
+                        if (_amCustomer) ...[
                           const SizedBox(height: 16),
                           _customerActions(),
                         ],
-                        // Review section — customer, order completed
-                        if (widget.role != 'designer' && order!['status'] == 'completed') ...[
+                        // Review hanya untuk customer di order ini, setelah selesai
+                        if (_amCustomer && order!['status'] == 'completed') ...[
                           const SizedBox(height: 16),
                           hasReviewed ? _reviewDoneCard() : _reviewFormCard(),
                         ],
@@ -269,13 +274,12 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     );
   }
 
-  // ─────────────────────────────────────────────────────────────────────
   Widget _infoCard() {
-    final status  = order!['status'] ?? '';
-    final title   = order!['portfolio']?['title'] ?? 'Order #${order!['id']}';
-    final price   = order!['total_price'] ?? 0;
-    final deadline= order!['deadline'];
-    final rawType = order!['portfolio']?['raw_file_type'];
+    final status   = order!['status'] ?? '';
+    final title    = order!['portfolio']?['title'] ?? 'Order #${order!['id']}';
+    final price    = order!['total_price'] ?? 0;
+    final deadline = order!['deadline'];
+    final rawType  = order!['portfolio']?['raw_file_type'];
     final revisionCount = _revisionCount;
 
     return Container(
@@ -299,6 +303,22 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           _row('Deadline', deadline.toString().split('T')[0]),
         if (order!['type'] == 'service')
           _row('Revisi', '$revisionCount/3 kali'),
+        // Label peran saya di order ini
+        const SizedBox(height: 8),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+          decoration: BoxDecoration(
+            color: (_amCustomer ? Colors.amber : Colors.blue).withValues(alpha: 0.15),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Text(
+            _amCustomer ? '👤 Kamu sebagai Customer' : '🎨 Kamu sebagai Designer',
+            style: TextStyle(
+              color: _amCustomer ? Colors.amber : Colors.lightBlueAccent,
+              fontSize: 11,
+            ),
+          ),
+        ),
         if (rawType != null) ...[
           const SizedBox(height: 6),
           Row(children: [
@@ -336,7 +356,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
             minHeight: 10,
           ),
         ),
-        if (widget.role == 'designer' && order!['status'] == 'in_progress') ...[
+        // Kontrol progress & upload file hasil — hanya untuk designer di order ini
+        if (_amDesigner && order!['status'] == 'in_progress') ...[
           const SizedBox(height: 12),
           Row(
             children: [10, 25, 50, 75, 100].map((p) => Expanded(
@@ -361,7 +382,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           const SizedBox(height: 4),
           const Center(child: Text('Tap untuk update progress',
               style: TextStyle(color: Colors.white38, fontSize: 11))),
-          // ── Upload file hasil (service only) ────────────────────
           if (order!['type'] == 'service') ...[
             const SizedBox(height: 16),
             const Divider(color: Colors.white12),
@@ -370,23 +390,14 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
               children: const [
                 Icon(Icons.upload_file, color: Colors.lightBlueAccent, size: 16),
                 SizedBox(width: 6),
-                Text(
-                  'Kirim File Hasil Jasa',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
-                ),
+                Text('Kirim File Hasil Jasa',
+                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
               ],
             ),
             const SizedBox(height: 4),
-            const Text(
-              'Upload file hasil kerja untuk menyelesaikan order.',
-              style: TextStyle(color: Colors.white38, fontSize: 12),
-            ),
+            const Text('Upload file hasil kerja untuk menyelesaikan order.',
+                style: TextStyle(color: Colors.white38, fontSize: 12)),
             const SizedBox(height: 10),
-            // Pilih file
             GestureDetector(
               onTap: _isUploading ? null : _pickDeliveryFile,
               child: Container(
@@ -402,61 +413,41 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                   ),
                 ),
                 child: _deliveryFile == null
-                    ? Row(
-                        children: const [
-                          Icon(Icons.attach_file,
-                              color: Colors.lightBlueAccent, size: 22),
-                          SizedBox(width: 10),
-                          Expanded(
-                            child: Text(
-                              'Tap untuk pilih file hasil kerja',
-                              style: TextStyle(
-                                  color: Colors.white60, fontSize: 13),
-                            ),
+                    ? Row(children: const [
+                        Icon(Icons.attach_file, color: Colors.lightBlueAccent, size: 22),
+                        SizedBox(width: 10),
+                        Expanded(child: Text('Tap untuk pilih file hasil kerja',
+                            style: TextStyle(color: Colors.white60, fontSize: 13))),
+                        Icon(Icons.chevron_right, color: Colors.white24),
+                      ])
+                    : Row(children: [
+                        Container(
+                          padding: const EdgeInsets.all(7),
+                          decoration: BoxDecoration(
+                            color: Colors.green.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(8),
                           ),
-                          Icon(Icons.chevron_right, color: Colors.white24),
-                        ],
-                      )
-                    : Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(7),
-                            decoration: BoxDecoration(
-                              color: Colors.green.withValues(alpha: 0.2),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: const Icon(Icons.insert_drive_file,
-                                color: Colors.green, size: 22),
+                          child: const Icon(Icons.insert_drive_file, color: Colors.green, size: 22),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(_deliveryFile!.name,
+                                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                                  overflow: TextOverflow.ellipsis),
+                              const SizedBox(height: 2),
+                              Text(_fmtSize(_deliveryFile!.size),
+                                  style: const TextStyle(color: Colors.white54, fontSize: 11)),
+                            ],
                           ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  _deliveryFile!.name,
-                                  style: const TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 13),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  _fmtSize(_deliveryFile!.size),
-                                  style: const TextStyle(
-                                      color: Colors.white54, fontSize: 11),
-                                ),
-                              ],
-                            ),
-                          ),
-                          GestureDetector(
-                            onTap: () => setState(() => _deliveryFile = null),
-                            child: const Icon(Icons.close,
-                                color: Colors.white38, size: 18),
-                          ),
-                        ],
-                      ),
+                        ),
+                        GestureDetector(
+                          onTap: () => setState(() => _deliveryFile = null),
+                          child: const Icon(Icons.close, color: Colors.white38, size: 18),
+                        ),
+                      ]),
               ),
             ),
             const SizedBox(height: 10),
@@ -464,22 +455,16 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
               width: double.infinity,
               child: ElevatedButton.icon(
                 icon: _isUploading
-                    ? const SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(
-                            color: Colors.white, strokeWidth: 2))
+                    ? const SizedBox(width: 16, height: 16,
+                        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
                     : const Icon(Icons.cloud_upload_outlined),
-                label: Text(
-                    _isUploading ? 'Mengupload...' : 'Upload & Selesaikan Order'),
-                onPressed:
-                    (_isUploading || _deliveryFile == null) ? null : _uploadDeliveryFile,
+                label: Text(_isUploading ? 'Mengupload...' : 'Upload & Selesaikan Order'),
+                onPressed: (_isUploading || _deliveryFile == null) ? null : _uploadDeliveryFile,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.green,
                   disabledBackgroundColor: Colors.white10,
                   foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   padding: const EdgeInsets.symmetric(vertical: 12),
                 ),
               ),
@@ -515,11 +500,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           const Icon(Icons.insert_drive_file, color: Colors.white54, size: 14),
           const SizedBox(width: 4),
           Expanded(
-            child: Text(
-              fileName,
-              style: const TextStyle(color: Colors.white70, fontSize: 13),
-              overflow: TextOverflow.ellipsis,
-            ),
+            child: Text(fileName,
+                style: const TextStyle(color: Colors.white70, fontSize: 13),
+                overflow: TextOverflow.ellipsis),
           ),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
@@ -540,7 +523,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                     child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
                 : const Icon(Icons.download),
             label: Text(isDownloading ? 'Mengunduh...' : 'Download File Hasil'),
-            onPressed: (isDownloading) ? null : _downloadFile,
+            onPressed: isDownloading ? null : _downloadFile,
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF0288D1),
               disabledBackgroundColor: Colors.white10,
@@ -554,7 +537,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     );
   }
 
-  // ── Rating form (customer, completed, belum review) ──────────────────
   Widget _reviewFormCard() {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -574,31 +556,27 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         const Text('Bagaimana pengalamanmu dengan order ini?',
             style: TextStyle(color: Colors.white54, fontSize: 12)),
         const SizedBox(height: 16),
-
-        // Star selector
-        Row(mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(5, (i) {
-              final star = i + 1;
-              return GestureDetector(
-                onTap: () => setState(() => _selectedRating = star),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
-                  child: Icon(
-                    star <= _selectedRating ? Icons.star : Icons.star_border,
-                    color: Colors.amber,
-                    size: 36,
-                  ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: List.generate(5, (i) {
+            final star = i + 1;
+            return GestureDetector(
+              onTap: () => setState(() => _selectedRating = star),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: Icon(
+                  star <= _selectedRating ? Icons.star : Icons.star_border,
+                  color: Colors.amber,
+                  size: 36,
                 ),
-              );
-            })),
+              ),
+            );
+          }),
+        ),
         const SizedBox(height: 6),
-        Center(child: Text(
-          _ratingLabel(_selectedRating),
-          style: const TextStyle(color: Colors.amber, fontSize: 13),
-        )),
+        Center(child: Text(_ratingLabel(_selectedRating),
+            style: const TextStyle(color: Colors.amber, fontSize: 13))),
         const SizedBox(height: 16),
-
-        // Comment
         TextField(
           controller: _commentCtrl,
           maxLines: 3,
@@ -614,7 +592,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           ),
         ),
         const SizedBox(height: 14),
-
         SizedBox(
           width: double.infinity,
           child: ElevatedButton(
@@ -623,8 +600,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
               backgroundColor: Colors.amber,
               disabledBackgroundColor: Colors.amber.withValues(alpha: 0.3),
               foregroundColor: Colors.black,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               padding: const EdgeInsets.symmetric(vertical: 13),
             ),
             child: isSubmittingReview
@@ -654,12 +630,11 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   );
 
   Widget _designerActions() {
-    final status = order!['status'];
+    final status    = order!['status'];
     final isService = order!['type'] == 'service';
     return Column(children: [
       if (status == 'pending')
         _btn('Mulai Pengerjaan', Colors.blue, () => _updateStatus('in_progress')),
-      // Untuk jasa: "Tandai Selesai" disembunyikan — diselesaikan via upload file di progress card
       if (status == 'in_progress' && !isService) ...[
         const SizedBox(height: 8),
         _btn('Tandai Selesai', Colors.green, () => _updateStatus('completed')),
@@ -670,7 +645,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   }
 
   Widget _customerActions() {
-    final status = order!['status'];
+    final status     = order!['status'];
     final hasDelivery = order!['latest_design_file'] != null;
     final canRequestRevision =
         status == 'completed' && hasDelivery && _revisionCount < 3;
@@ -683,9 +658,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       if (canRequestRevision)
         Padding(
           padding: EdgeInsets.only(
-            top: (status == 'in_progress' || status == 'revision') && hasDelivery
-                ? 8
-                : 0,
+            top: (status == 'in_progress' || status == 'revision') && hasDelivery ? 8 : 0,
           ),
           child: _btn(
             'Minta Revisi (${_revisionCount + 1}/3)',
@@ -702,11 +675,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
           ),
-          child: const Text(
-            'Batas revisi 3 kali sudah terpakai.',
-            style: TextStyle(color: Colors.orangeAccent),
-            textAlign: TextAlign.center,
-          ),
+          child: const Text('Batas revisi 3 kali sudah terpakai.',
+              style: TextStyle(color: Colors.orangeAccent),
+              textAlign: TextAlign.center),
         ),
       if (status == 'pending')
         Padding(
@@ -716,7 +687,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     ]);
   }
 
-  // ─────────── Helpers ───────────────────────────────────────────────
   String _fmtSize(int bytes) {
     if (bytes < 1024) return '$bytes B';
     if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
@@ -747,18 +717,18 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     padding: const EdgeInsets.symmetric(vertical: 3),
     child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
       Text(label, style: const TextStyle(color: Colors.white54)),
-      Text(value, style: const TextStyle(color: Colors.white)),
+      Text(value,  style: const TextStyle(color: Colors.white)),
     ]),
   );
 
   Widget _badge(String status) {
     Color c; String lbl;
     switch (status) {
-      case 'pending':     c = Colors.orange; lbl = 'Pending'; break;
+      case 'pending':     c = Colors.orange; lbl = 'Pending';     break;
       case 'in_progress': c = Colors.blue;   lbl = 'In Progress'; break;
-      case 'revision':    c = Colors.yellow; lbl = 'Revision'; break;
-      case 'completed':   c = Colors.green;  lbl = 'Completed'; break;
-      case 'cancelled':   c = Colors.red;    lbl = 'Cancelled'; break;
+      case 'revision':    c = Colors.yellow; lbl = 'Revision';    break;
+      case 'completed':   c = Colors.green;  lbl = 'Completed';   break;
+      case 'cancelled':   c = Colors.red;    lbl = 'Cancelled';   break;
       default:            c = Colors.grey;   lbl = status;
     }
     return Container(
